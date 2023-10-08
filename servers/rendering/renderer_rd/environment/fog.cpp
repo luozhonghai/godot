@@ -453,7 +453,7 @@ void Fog::VolumetricFog::init(const Vector3i &fog_size, RID p_sky_shader) {
 	fog_map = RD::get_singleton()->texture_create(tf, RD::TextureView());
 	RD::get_singleton()->set_resource_name(fog_map, "Fog map");
 
-#if defined(MACOS_ENABLED) || defined(IOS_ENABLED)
+#if defined(MACOS_ENABLED) || defined(IOS_ENABLED) || defined(VISIONOS_ENABLED)
 	Vector<uint8_t> dm;
 	dm.resize(fog_size.x * fog_size.y * fog_size.z * 4);
 	dm.fill(0);

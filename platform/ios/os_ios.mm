@@ -603,6 +603,8 @@ void OS_IOS::on_focus_out() {
 		}
 
 		[AppDelegate.viewController.godotView stopRendering];
+		//disable [godot_view_renderer renderOnView]
+		//then disable self OS_IOS::iterate
 
 		audio_driver.stop();
 	}

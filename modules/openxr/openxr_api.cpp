@@ -1831,6 +1831,7 @@ bool OpenXRAPI::pre_draw_viewport(RID p_render_target) {
 
 RID OpenXRAPI::get_color_texture() {
 	if (swapchains[OPENXR_SWAPCHAIN_COLOR].image_acquired) {
+		//image_index assigned from OpenXRAPI::acquire_image
 		return graphics_extension->get_texture(swapchains[OPENXR_SWAPCHAIN_COLOR].swapchain_graphics_data, swapchains[OPENXR_SWAPCHAIN_COLOR].image_index);
 	} else {
 		return RID();

@@ -26,15 +26,26 @@ class DisplayServerVISIONOS : public DisplayServer {
 #if defined(VULKAN_ENABLED)
 	VulkanContextVISIONOS *context_vulkan = nullptr;
 	RenderingDeviceVulkan *rendering_device_vulkan = nullptr;
+
+	VkDevice _device;
 #endif
 
+	//construct from Main::setup2() 
     DisplayServerVISIONOS(const String &p_rendering_driver, DisplayServer::WindowMode p_mode, DisplayServer::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Error &r_error);
 	~DisplayServerVISIONOS();
 
 public:
 	String rendering_driver;
 
-	static DisplayServerIOS *get_singleton();
+	static DisplayServerVISIONOS *get_singleton();
+
+#if defined(VULKAN_ENABLED)
+	VkDevice get_vkdevice() { return _device; }
+#endif
+
+	static void register_visionos_driver();
+	static DisplayServer *create_func(const String &p_rendering_driver, WindowMode p_mode, DisplayServer::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Error &r_error);
+	static Vector<String> get_rendering_drivers_func();
 
 };
 

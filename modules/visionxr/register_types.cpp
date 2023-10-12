@@ -6,9 +6,9 @@
 #include "editor/editor_node.h"
 #endif
 
-// #ifdef VISIONOS_ENABLED
+#ifdef VISIONOS_ENABLED
 static Ref<VisionXRInterface> visionxr_interface;
-//#endif
+#endif
 
 
 void initialize_visionxr_module(ModuleInitializationLevel p_level) {
@@ -18,15 +18,18 @@ void initialize_visionxr_module(ModuleInitializationLevel p_level) {
 
 	GDREGISTER_CLASS(VisionXRInterface);
 
-	// #ifdef VISIONOS_ENABLED
+#ifdef VISIONOS_ENABLED
 	XRServer *xr_server= XRServer::get_singleton();
 	if(xr_server) {
 		visionxr_interface.instantiate();
 
 		xr_server->add_interface(visionxr_interface);
-		visionxr_interface->initialize();
+
+		if (visionxr_interface->initialize_on_startup()) {
+			visionxr_interface->initialize();
+		}
 	}
-	// #ifdef VISIONOS_ENABLED
+#ifdef VISIONOS_ENABLED
 
 }
 
@@ -35,7 +38,7 @@ void uninitialize_visionxr_module(ModuleInitializationLevel p_level) {
 		return;
 	}
 
-	// #ifdef VISIONOS_ENABLED
+#ifdef VISIONOS_ENABLED
 	if (visionxr_interface.is_valid()) {
 		// uninitialize just in case
 		if (visionxr_interface->is_initialized()) {
@@ -54,7 +57,7 @@ void uninitialize_visionxr_module(ModuleInitializationLevel p_level) {
 		// and release
 		visionxr_interface.unref();
 	}
-	// #ifdef VISIONOS_ENABLED
+#ifdef VISIONOS_ENABLED
 
 
 }

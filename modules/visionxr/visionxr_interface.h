@@ -3,6 +3,11 @@
 #define VISIONXR_INTERFACE_H
 
 #include "servers/xr/xr_interface.h"
+#import <Foundation/Foundation.h>
+#import <Metal/Metal.h>
+#import <MetalKit/MetalKit.h>
+#import <ARKit/ARKit.h>
+#import <Spatial/Spatial.h>
 
 class VisionXRInterface : public XRInterface{
 	GDCLASS(VisionXRInterface, XRInterface);
@@ -19,8 +24,37 @@ public:
 	bool pre_draw_viewport(RID p_render_target) override;
 	virtual void end_frame() override;
 
+	bool initialize_on_startup() const;
+	virtual bool is_initialized() const override;
+	virtual bool initialize() override;
+
 protected:
 	static void _bind_methods();
+
+private:
+	VkDevice _device = NULL;
+	bool initialized = false;
+	cp_frame_t _frame;
+	cp_drawable_t _drawable;
+
+	Vector<RID> color_texture_rids;
+	Vector<RID> depth_texture_rids;
+
+	void prepareDepth(cp_drawable_t drawable, size_t index);
+    void prepareColor(cp_drawable_t drawable, size_t index);
+
+	ar_device_anchor_t createPoseForTiming(cp_frame_timing_t timing) {
+        //ar_pose_t outPose = ar_pose_create();
+        ar_device_anchor_t outDeviceAnchor = ar_device_anchor_create();
+
+        cp_time_t presentationTime = cp_frame_timing_get_presentation_time(timing);
+        CFTimeInterval queryTime = cp_time_to_cf_time_interval(presentationTime);
+        ar_device_anchor_query_status_t status = ar_world_tracking_provider_query_device_anchor_at_timestamp(_worldTrackingProvider, queryTime, outDeviceAnchor);
+        if (status != ar_device_anchor_query_status_success) {
+            NSLog(@"Failed to get estimated pose from world tracking provider for presentation timestamp %0.3f", queryTime);
+        }
+        return outDeviceAnchor;
+    }
 
 };
 

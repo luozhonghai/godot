@@ -28,15 +28,15 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef IOS_API_H
-#define IOS_API_H
+#ifndef VISIONOS_API_H
+#define VISIONOS_API_H
 
-#if defined(IOS_ENABLED)
+#if defined(VISIONOS_ENABLED)
 extern void godot_visionos_plugins_initialize();
 extern void godot_visionos_plugins_deinitialize();
 #endif
 
-void register_ios_api();
-void unregister_ios_api();
+void register_visionos_api();
+void unregister_visionos_api();
 
-#endif // IOS_API_H
+#endif // VISIONOS_API_H

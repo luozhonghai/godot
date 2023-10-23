@@ -28,11 +28,28 @@ public:
 	virtual bool is_initialized() const override;
 	virtual bool initialize() override;
 
+	virtual uint32_t get_view_count() override;
+	virtual Size2 get_render_target_size() override;
+
 protected:
 	static void _bind_methods();
 
+	Size2 target_size;
+
 private:
-	VkDevice _device = NULL;
+
+	typedef struct {
+        VkFormat format;
+
+        VkImage image;
+        VkMemoryAllocateInfo mem_alloc;
+        VkDeviceMemory mem;
+        VkImageView view;
+    } CustomAttachment;
+
+    CustomAttachment depth,color;
+
+	VkDevice _device = nullptr;
 	bool initialized = false;
 	cp_frame_t _frame;
 	cp_drawable_t _drawable;
@@ -57,6 +74,14 @@ private:
     }
 
 };
+
+inline uint32_t VisionXRInterface::get_view_count() {
+	return 2;
+}
+
+inline Size2 VisionXRInterface::get_render_target_size() {
+	return target_size;
+}
 
 
 #endif

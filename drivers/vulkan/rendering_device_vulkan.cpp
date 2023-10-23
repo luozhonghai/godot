@@ -6713,10 +6713,34 @@ Error RenderingDeviceVulkan::_draw_list_setup_framebuffer(Framebuffer *p_framebu
 	return OK;
 }
 
-Error RenderingDeviceVulkan::_draw_list_render_pass_begin(Framebuffer *framebuffer, InitialAction p_initial_color_action, FinalAction p_final_color_action, InitialAction p_initial_depth_action, FinalAction p_final_depth_action, const Vector<Color> &p_clear_colors, float p_clear_depth, uint32_t p_clear_stencil, Point2i viewport_offset, Point2i viewport_size, VkFramebuffer vkframebuffer, VkRenderPass render_pass, VkCommandBuffer command_buffer, VkSubpassContents subpass_contents, const Vector<RID> &p_storage_textures) {
+Error RenderingDeviceVulkan::_draw_list_render_pass_begin(Framebuffer *framebuffer, InitialAction p_initial_color_action, FinalAction p_final_color_action, InitialAction p_initial_depth_action, FinalAction p_final_depth_action, const Vector<Color> &p_clear_colors, float p_clear_depth, uint32_t p_clear_stencil, Point2i viewport_offset, Point2i viewport_size, VkFramebuffer vkframebuffer, VkRenderPass render_pass, VkCommandBuffer command_buffer, VkSubpassContents subpass_contents, const Vector<RID> &p_storage_textures, bool bUseRenderPassAttachment) {
 	VkRenderPassBeginInfo render_pass_begin;
 	render_pass_begin.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
 	render_pass_begin.pNext = nullptr;
+
+	//visionos
+	if(bUseRenderPassAttachment)
+	{
+		VkRenderPassAttachmentBeginInfo rp_attach;
+        
+        // const VkImageView attachmentsView[2] = {
+        //     [0] = color.view,
+        //     [1] = depth.view
+        // };
+		Vector<VkImageView> attachments;
+		for (int i = 0; i < framebuffer->texture_ids.size(); i++) {
+			Texture *texture = texture_owner.get_or_null(framebuffer->texture_ids[i]);
+			if (texture) {
+				attachments.push_back(texture->view);
+			}
+		}
+        rp_attach.pAttachments = &attachments[0];
+        rp_attach.attachmentCount = framebuffer->texture_ids.size();
+        
+        rp_attach.sType = VK_STRUCTURE_TYPE_RENDER_PASS_ATTACHMENT_BEGIN_INFO;
+		render_pass_begin.pNext = &rp_attach;
+	}
+
 	render_pass_begin.renderPass = render_pass;
 	render_pass_begin.framebuffer = vkframebuffer;
 	/*
@@ -6869,7 +6893,7 @@ void RenderingDeviceVulkan::_draw_list_insert_clear_region(DrawList *p_draw_list
 	vkCmdClearAttachments(p_draw_list->command_buffer, clear_attachments.size(), clear_attachments.ptr(), 1, &cr);
 }
 
-RenderingDevice::DrawListID RenderingDeviceVulkan::draw_list_begin(RID p_framebuffer, InitialAction p_initial_color_action, FinalAction p_final_color_action, InitialAction p_initial_depth_action, FinalAction p_final_depth_action, const Vector<Color> &p_clear_color_values, float p_clear_depth, uint32_t p_clear_stencil, const Rect2 &p_region, const Vector<RID> &p_storage_textures) {
+RenderingDevice::DrawListID RenderingDeviceVulkan::draw_list_begin(RID p_framebuffer, InitialAction p_initial_color_action, FinalAction p_final_color_action, InitialAction p_initial_depth_action, FinalAction p_final_depth_action, const Vector<Color> &p_clear_color_values, float p_clear_depth, uint32_t p_clear_stencil, const Rect2 &p_region, const Vector<RID> &p_storage_textures, bool bUseRenderPassAttachment) {
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND_V_MSG(draw_list != nullptr, INVALID_ID, "Only one draw list can be active at the same time.");
@@ -6935,7 +6959,7 @@ RenderingDevice::DrawListID RenderingDeviceVulkan::draw_list_begin(RID p_framebu
 	ERR_FAIL_COND_V(err != OK, INVALID_ID);
 
 	VkCommandBuffer command_buffer = frames[frame].draw_command_buffer;
-	err = _draw_list_render_pass_begin(framebuffer, p_initial_color_action, p_final_color_action, p_initial_depth_action, p_final_depth_action, p_clear_color_values, p_clear_depth, p_clear_stencil, viewport_offset, viewport_size, vkframebuffer, render_pass, command_buffer, VK_SUBPASS_CONTENTS_INLINE, p_storage_textures);
+	err = _draw_list_render_pass_begin(framebuffer, p_initial_color_action, p_final_color_action, p_initial_depth_action, p_final_depth_action, p_clear_color_values, p_clear_depth, p_clear_stencil, viewport_offset, viewport_size, vkframebuffer, render_pass, command_buffer, VK_SUBPASS_CONTENTS_INLINE, p_storage_textures, bUseRenderPassAttachment);
 
 	if (err != OK) {
 		return INVALID_ID;
@@ -8522,6 +8546,19 @@ void RenderingDeviceVulkan::_finalize_command_bufers() {
 		vkEndCommandBuffer(frames[frame].setup_command_buffer);
 		vkEndCommandBuffer(frames[frame].draw_command_buffer);
 	}
+
+#ifdef VISIONOS_ENABLED
+	VkExportMetalObjectsInfoEXT exportMetalObj;
+	VkExportMetalCommandBufferInfoEXT exportMetalCmdBufferObj;
+	exportMetalObj.pNext = &exportMetalCmdBufferObj;
+
+	exportMetalCmdBufferObj.sType = VK_STRUCTURE_TYPE_EXPORT_METAL_COMMAND_BUFFER_INFO_EXT;
+	exportMetalCmdBufferObj.commandBuffer = frames[frame].draw_command_buffer;
+	vkExportMetalObjectsEXT(device, &exportMetalObj);
+
+	cp_drawable_encode_present(drawable, exportMetalCmdBufferObj.mtlCommandBuffer);
+#endif
+
 }
 
 void RenderingDeviceVulkan::_begin_frame() {

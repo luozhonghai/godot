@@ -33,6 +33,12 @@ bool VisionXRInterface::is_initialized() const {
 bool VisionXRInterface::initialize() {
 	_device = DisplayServerVISIONOS::get_singleton()->get_vkdevice();
 	initialized = true;
+
+	MVKConfiguration config;
+    size_t len = sizeof(MVKConfiguration);
+    vkGetMoltenVKConfigurationMVK(nullptr, &config, &len);
+    config.prefillMetalCommandBuffers = MVK_CONFIG_PREFILL_METAL_COMMAND_BUFFERS_STYLE_DEFERRED_ENCODING;
+    vkSetMoltenVKConfigurationMVK(nullptr, &config, &len);
 }
 
 void VisionXRInterface::process() {
@@ -61,13 +67,25 @@ void VisionXRInterface::pre_render() {
 	//_renderer->drawAndPresent(frame, drawable);
 
 	int count = cp_drawable_get_view_count(_drawable);
+	color_texture_rids.resize(count);
+	depth_texture_rids.resize(count); 
 
-	RenderingServer *rendering_server = RenderingServer::get_singleton();
-	ERR_FAIL_NULL_V(rendering_server, false);
-	RenderingDevice *rendering_device = rendering_server->get_rendering_device();
-	ERR_FAIL_NULL_V(rendering_device, false);
+	//for (int i = 0; i < count; ++i) {
+
+		prepareColor(_drawable, 0);
+		prepareDepth(_drawable, 0);
 
 
+	//}
+
+	
+
+}
+
+uint32_t VisionXRInterface::get_view_count() {
+	// TODO set this based on our configuration
+	int count = cp_drawable_get_view_count(_drawable);
+	return count;
 }
 
 
@@ -102,6 +120,37 @@ void VisionXRInterface::prepareColor(cp_drawable_t drawable, size_t index)
     
     /* create image */
     result = vkCreateImage(_device, &image, NULL, &color.image);
+
+	color.format = color_format;
+
+	RenderingServer *rendering_server = RenderingServer::get_singleton();
+	ERR_FAIL_NULL_V(rendering_server, false);
+	RenderingDevice *rendering_device = rendering_server->get_rendering_device();
+	ERR_FAIL_NULL_V(rendering_device, false);
+
+	RenderingDevice::DataFormat format = RenderingDevice::DATA_FORMAT_R16G16B16A16_SFLOAT;
+	RenderingDevice::TextureSamples samples = RenderingDevice::TEXTURE_SAMPLES_1;
+	uint64_t usage_flags = RenderingDevice::TEXTURE_USAGE_SAMPLING_BIT | RenderingDevice::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT;
+
+	uint32_t p_width = color_texture.width;
+	uint32_t p_height = color_texture.width;
+
+	target_size.width = p_width;
+	target_size.height = p_height;
+
+
+	RID image_rid = rendering_device->texture_create_from_extension(
+				RenderingDevice::TEXTURE_TYPE_2D,
+				format,
+				samples,
+				usage_flags,
+				(uint64_t)color.image,
+				p_width,
+				p_height,
+				1,
+				1);
+
+	color_texture_rids[index] = image_rid;
 }
 
 void VisionXRInterface::prepareDepth(cp_drawable_t drawable, size_t index)

@@ -9,7 +9,7 @@ class VulkanContextVISIONOS : public VulkanContext
 	virtual const char *_get_platform_surface_extension() const;
 
 public:
-    VulkanContextVISIONOS(/);
+    VulkanContextVISIONOS();
     ~VulkanContextVISIONOS();
 };
 

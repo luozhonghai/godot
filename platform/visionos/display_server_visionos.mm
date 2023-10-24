@@ -1,5 +1,5 @@
 
-
+#import "display_server_visionos.h"
 //parent(DisplayServer) constructor method will set singleton to this
 DisplayServerVISIONOS *DisplayServerVISIONOS::get_singleton() {
 	return (DisplayServerVISIONOS *)DisplayServer::get_singleton();
@@ -29,6 +29,7 @@ DisplayServerVISIONOS::DisplayServerVISIONOS(const String &p_rendering_driver, W
 
 		RendererCompositorRD::make_current();
     }
+#endif
 }
 
 DisplayServerVISIONOS::~DisplayServerVISIONOS() {
@@ -66,4 +67,61 @@ Vector<String> DisplayServerVISIONOS::get_rendering_drivers_func() {
 
 void DisplayServerVISIONOS::register_visionos_driver() {
 	register_create_function("VISIONOS", create_func, get_rendering_drivers_func);
+}
+
+bool DisplayServerVISIONOS::has_feature(Feature p_feature) const {
+
+	return false;
+}
+
+String DisplayServerVISIONOS::get_name() const {
+	return "VisionOS";
+}
+
+int DisplayServerVISIONOS::get_screen_count() const {
+	return 1;
+}
+
+int DisplayServerVISIONOS::get_primary_screen() const {
+	return 0;
+}
+
+Point2i DisplayServerVISIONOS::screen_get_position(int p_screen) const {
+	return Size2i();
+}
+
+Size2i DisplayServerVISIONOS::screen_get_size(int p_screen) const {
+	return Size2i();
+}
+
+Rect2i DisplayServerVISIONOS::screen_get_usable_rect(int p_screen) const {
+	return Rect2i(screen_get_position(p_screen), screen_get_size(p_screen));
+}
+
+int DisplayServerVISIONOS::screen_get_dpi(int p_screen) const {
+  //temp
+  return 132;
+}
+
+float DisplayServerVISIONOS::screen_get_refresh_rate(int p_screen) const {
+	//return [UIScreen mainScreen].maximumFramesPerSecond;
+	return 90;
+}
+
+float DisplayServerVISIONOS::screen_get_scale(int p_screen) const {
+	return 1.0;
+}
+
+Vector<DisplayServer::WindowID> DisplayServerVISIONOS::get_window_list() const {
+	Vector<DisplayServer::WindowID> list;
+	list.push_back(MAIN_WINDOW_ID);
+	return list;
+}
+
+DisplayServer::WindowID DisplayServerVISIONOS::get_window_at_screen_position(const Point2i &p_position) const {
+	return MAIN_WINDOW_ID;
+}
+
+void DisplayServerVISIONOS::process_events() {
+	//Input::get_singleton()->flush_buffered_events();
 }

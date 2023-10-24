@@ -51,6 +51,10 @@
 #include <vulkan/vulkan.h>
 #endif
 
+#ifdef VISIONOS_ENABLED
+#import <CompositorServices/CompositorServices.h>
+#endif
+
 class VulkanContext;
 
 class RenderingDeviceVulkan : public RenderingDevice {

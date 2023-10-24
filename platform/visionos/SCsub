@@ -1,0 +1,43 @@
+#!/usr/bin/env python
+
+Import("env")
+
+ios_lib = [
+    "godot_visionos.mm",
+    "os_visionos.mm",
+    #"main.m",
+    #"app_delegate.mm",
+    #"view_controller.mm",
+    #"ios.mm",
+    "vulkan_context_visionos.mm",
+    "display_server_visionos.mm",
+    #"joypad_ios.mm",
+    #"godot_view.mm",
+    #"tts_ios.mm",
+    #"display_layer.mm",
+    #"godot_app_delegate.m",
+    #"godot_view_renderer.mm",
+    #"device_metrics.m",
+    #"keyboard_input_view.mm",
+    #"key_mapping_ios.mm",
+]
+
+env_visionos = env.Clone()
+visionos_lib = env_visionos.add_library("visionos", ios_lib)
+
+# (iOS) Enable module support
+env_visionos.Append(CCFLAGS=["-fmodules", "-fcxx-modules"])
+
+
+def combine_libs(target=None, source=None, env=None):
+    lib_path = target[0].srcnode().abspath
+    if "osxcross" in env:
+        libtool = "$IOS_TOOLCHAIN_PATH/usr/bin/${ios_triple}libtool"
+    else:
+        libtool = "$IOS_TOOLCHAIN_PATH/usr/bin/libtool"
+    env.Execute(
+        libtool + ' -static -o "' + lib_path + '" ' + " ".join([('"' + lib.srcnode().abspath + '"') for lib in source])
+    )
+
+
+combine_command = env_visionos.Command("#bin/libgodot" + env_visionos["LIBSUFFIX"], [visionos_lib] + env_visionos["LIBS"], combine_libs)

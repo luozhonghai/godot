@@ -19,6 +19,7 @@ extern "C" {
 
 
 
+// VK_EXT_metal_surface is a preprocessor guard. Do not pass it to API calls.
 #define VK_EXT_metal_surface 1
 #ifdef __OBJC__
 @class CAMetalLayer;
@@ -47,6 +48,7 @@ VKAPI_ATTR VkResult VKAPI_CALL vkCreateMetalSurfaceEXT(
 #endif
 
 
+// VK_EXT_metal_objects is a preprocessor guard. Do not pass it to API calls.
 #define VK_EXT_metal_objects 1
 #ifdef __OBJC__
 @protocol MTLDevice;
@@ -60,6 +62,13 @@ typedef void* MTLDevice_id;
 typedef id<MTLCommandQueue> MTLCommandQueue_id;
 #else
 typedef void* MTLCommandQueue_id;
+#endif
+
+#ifdef __OBJC__
+@protocol MTLCommandBuffer;
+typedef id<MTLCommandBuffer> MTLCommandBuffer_id;
+#else
+typedef void* MTLCommandBuffer_id;
 #endif
 
 #ifdef __OBJC__
@@ -120,6 +129,13 @@ typedef struct VkExportMetalCommandQueueInfoEXT {
     VkQueue               queue;
     MTLCommandQueue_id    mtlCommandQueue;
 } VkExportMetalCommandQueueInfoEXT;
+
+typedef struct VkExportMetalCommandBufferInfoEXT {
+    VkStructureType       sType;
+    const void*           pNext;
+    VkCommandBuffer       commandBuffer;
+    MTLCommandBuffer_id    mtlCommandBuffer;
+} VkExportMetalCommandBufferInfoEXT;
 
 typedef struct VkExportMetalBufferInfoEXT {
     VkStructureType    sType;

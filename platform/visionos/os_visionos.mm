@@ -23,7 +23,7 @@ OS_VISIONOS *OS_VISIONOS::get_singleton() {
 OS_VISIONOS::OS_VISIONOS(cp_layer_renderer_t layerRenderer) :
 	_layerRenderer(layerRenderer) 
 {
-	DisplayServerVISIONOS::register_ios_driver();
+	DisplayServerVISIONOS::register_visionos_driver();
 }
 
 OS_VISIONOS::~OS_VISIONOS() {}
@@ -88,6 +88,24 @@ void OS_VISIONOS::delete_main_loop() {
 	main_loop = nullptr;
 }
 
+void OS_VISIONOS::finalize() {
+	//deinitialize_modules();
+
+	// Already gets called
+	//delete_main_loop();
+}
+
+bool OS_VISIONOS::_check_internal_feature_support(const String &p_feature) {
+	if (p_feature == "system_fonts") {
+		return true;
+	}
+	if (p_feature == "mobile") {
+		return true;
+	}
+
+	return false;
+}
+
 bool OS_VISIONOS::iterate() {
 	if (!main_loop) {
 		return true;
@@ -115,7 +133,7 @@ bool OS_VISIONOS::iterate() {
 }
 
 //called from visionxr interface
-void cp_frame_t OS_VISIONOS::getVisionFrame() {
+cp_frame_t OS_VISIONOS::getVisionFrame() {
 	return _frame;
 }
 

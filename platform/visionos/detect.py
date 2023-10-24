@@ -24,10 +24,10 @@ def get_opts():
         (
             "IOS_TOOLCHAIN_PATH",
             "Path to iOS toolchain",
-            "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain",
+            "/Applications/Xcode-beta.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain",
         ),
-        ("IOS_SDK_PATH", "Path to the iOS SDK", ""),
-        BoolVariable("ios_simulator", "Build for iOS Simulator", False),
+        ("VISIONOS_SDK_PATH", "Path to the iOS SDK", ""),
+        BoolVariable("xr_simulator", "Build for VisionOS Simulator", True),
         ("ios_triple", "Triple for ios toolchain", ""),
     ]
 
@@ -95,15 +95,15 @@ def configure(env: "Environment"):
 
     ## Compile flags
 
-    if env["ios_simulator"]:
-        detect_darwin_sdk_path("iossimulator", env)
-        env.Append(ASFLAGS=["-mios-simulator-version-min=12.0"])
-        env.Append(CCFLAGS=["-mios-simulator-version-min=12.0"])
+    if env["xr_simulator"]:
+        detect_darwin_sdk_path("xrsimulator", env)
+        #env.Append(ASFLAGS=["-mios-simulator-version-min=12.0"])
+        #env.Append(CCFLAGS=["-mios-simulator-version-min=12.0"])
         env.extra_suffix = ".simulator" + env.extra_suffix
     else:
-        detect_darwin_sdk_path("ios", env)
-        env.Append(ASFLAGS=["-miphoneos-version-min=12.0"])
-        env.Append(CCFLAGS=["-miphoneos-version-min=12.0"])
+        detect_darwin_sdk_path("xros", env)
+        #env.Append(ASFLAGS=["-miphoneos-version-min=12.0"])
+        #env.Append(CCFLAGS=["-miphoneos-version-min=12.0"])
 
     if env["arch"] == "x86_64":
         if not env["ios_simulator"]:
@@ -115,7 +115,7 @@ def configure(env: "Environment"):
             CCFLAGS=(
                 "-fobjc-arc -arch x86_64"
                 " -fobjc-abi-version=2 -fobjc-legacy-dispatch -fmessage-length=0 -fpascal-strings -fblocks"
-                " -fasm-blocks -isysroot $IOS_SDK_PATH"
+                " -fasm-blocks -isysroot $VISIONOS_SDK_PATH"
             ).split()
         )
         env.Append(ASFLAGS=["-arch", "x86_64"])
@@ -125,7 +125,7 @@ def configure(env: "Environment"):
                 "-fobjc-arc -arch arm64 -fmessage-length=0 -fno-strict-aliasing"
                 " -fdiagnostics-print-source-range-info -fdiagnostics-show-category=id -fdiagnostics-parseable-fixits"
                 " -fpascal-strings -fblocks -fvisibility=hidden -MMD -MT dependencies"
-                " -isysroot $IOS_SDK_PATH".split()
+                " -isysroot $VISIONOS_SDK_PATH".split()
             )
         )
         env.Append(ASFLAGS=["-arch", "arm64"])
@@ -136,13 +136,14 @@ def configure(env: "Environment"):
 
     env.Prepend(
         CPPPATH=[
-            "$IOS_SDK_PATH/usr/include",
-            "$IOS_SDK_PATH/System/Library/Frameworks/AudioUnit.framework/Headers",
+            "$VISIONOS_SDK_PATH/usr/include",
+            "$VISIONOS_SDK_PATH/System/Library/Frameworks/AudioUnit.framework/Headers",
         ]
     )
 
     env.Prepend(CPPPATH=["#platform/visionos"])
     env.Append(CPPDEFINES=["VISIONOS_ENABLED", "UNIX_ENABLED", "COREAUDIO_ENABLED"])
 
-    if env["vulkan"]:
-        env.Append(CPPDEFINES=["VULKAN_ENABLED"])
+    #if env["vulkan"]:
+    env.Append(CPPDEFINES=["VULKAN_ENABLED"])
+    env.Append(CPPDEFINES=["VK_USE_PLATFORM_METAL_EXT"])

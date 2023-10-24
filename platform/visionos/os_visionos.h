@@ -32,6 +32,13 @@ private:
 
 	cp_frame_t _frame;
 
+	virtual void initialize_joypads() override {
+	}
+
+	virtual void delete_main_loop() override;
+
+	virtual void finalize() override;
+
 public:
 	static OS_VISIONOS *get_singleton();
 
@@ -48,6 +55,9 @@ public:
 	void start();
 	void on_focus_out();
 	void on_focus_in();
+
+	virtual bool _check_internal_feature_support(const String &p_feature) override;
+
 
 };
 

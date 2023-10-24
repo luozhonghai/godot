@@ -22,6 +22,8 @@ public:
 	virtual void process() override;
 	virtual void pre_render() override;
 	bool pre_draw_viewport(RID p_render_target) override;
+	virtual Vector<BlitToScreen> post_draw_viewport(RID p_render_target, const Rect2 &p_screen_rect) override; /* inform XR interface we finished our viewport draw process */
+
 	virtual void end_frame() override;
 
 	bool initialize_on_startup() const;

@@ -41,6 +41,13 @@
 
 #include "thirdparty/misc/smolv.h"
 
+#ifdef VISIONOS_ENABLED
+
+#include "servers/xr_server.h"
+#include "servers/xr/xr_interface.h"
+//#import "modules/visionxr/visionxr_interface.h"
+#endif
+
 //#define FORCE_FULL_BARRIER
 
 static const uint32_t SMALL_ALLOCATION_MAX_SIZE = 4096;
@@ -8556,7 +8563,13 @@ void RenderingDeviceVulkan::_finalize_command_bufers() {
 	exportMetalCmdBufferObj.commandBuffer = frames[frame].draw_command_buffer;
 	vkExportMetalObjectsEXT(device, &exportMetalObj);
 
-	cp_drawable_encode_present(drawable, exportMetalCmdBufferObj.mtlCommandBuffer);
+	Ref<XRInterface> xr_interface;
+	if (XRServer::get_singleton() != nullptr) {
+		xr_interface = XRServer::get_singleton()->get_primary_interface();
+		//todo: fix it
+		//(VisionXRInterface*)xr_interface->post_encode_present(exportMetalCmdBufferObj.mtlCommandBuffer);
+	}
+	//cp_drawable_encode_present(drawable, exportMetalCmdBufferObj.mtlCommandBuffer);
 #endif
 
 }

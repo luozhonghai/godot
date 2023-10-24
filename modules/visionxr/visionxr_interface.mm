@@ -158,10 +158,22 @@ void VisionXRInterface::prepareDepth(cp_drawable_t drawable, size_t index)
 	
 }
 
-bool VisionXRInterface::pre_draw_viewport(RID p_render_target) {
+bool VisionXRInterface::pre_draw_viewport(RID p_render_target) 
+{
 	return true;
 }
 
+Vector<BlitToScreen> VisionXRInterface::post_draw_viewport(RID p_render_target, const Rect2 &p_screen_rect) 
+{
+	Vector<BlitToScreen> blit_to_screen;
+	//cp_drawable_encode_present(drawable, exportMetalCmdBufferObj.mtlCommandBuffer);
+	return blit_to_screen;
+}
+
+void VisionXRInterface::post_encode_present(id<MTLCommandBuffer> mtlCommandBuffer)
+{
+	cp_drawable_encode_present(_drawable, mtlCommandBuffer);
+}
 void VisionXRInterface::end_frame() {
 
 	cp_frame_end_submission(_frame);

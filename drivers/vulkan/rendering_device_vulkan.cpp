@@ -45,7 +45,9 @@
 
 #include "servers/xr_server.h"
 #include "servers/xr/xr_interface.h"
-//#import "modules/visionxr/visionxr_interface.h"
+//#include "modules/visionxr/visionxr_interface.h"
+#import "modules/visionxr/vulkan_bridge.h"
+
 #endif
 
 //#define FORCE_FULL_BARRIER
@@ -8563,12 +8565,14 @@ void RenderingDeviceVulkan::_finalize_command_bufers() {
 	exportMetalCmdBufferObj.commandBuffer = frames[frame].draw_command_buffer;
 	vkExportMetalObjectsEXT(device, &exportMetalObj);
 
-	Ref<XRInterface> xr_interface;
-	if (XRServer::get_singleton() != nullptr) {
-		xr_interface = XRServer::get_singleton()->get_primary_interface();
+	VulkanBridge::vision_encode_present(exportMetalCmdBufferObj);
+
+	//Ref<XRInterface> xr_interface;
+	//if (XRServer::get_singleton() != nullptr) {
+	//	xr_interface = XRServer::get_singleton()->get_primary_interface();
 		//todo: fix it
 		//(VisionXRInterface*)xr_interface->post_encode_present(exportMetalCmdBufferObj.mtlCommandBuffer);
-	}
+	//}
 	//cp_drawable_encode_present(drawable, exportMetalCmdBufferObj.mtlCommandBuffer);
 #endif
 

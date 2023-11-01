@@ -120,6 +120,7 @@ def configure(env: "Environment"):
         )
         env.Append(ASFLAGS=["-arch", "x86_64"])
     elif env["arch"] == "arm64":
+        env.Prepend(LINKFLAGS=["-ld_classic"])
         env.Append(
             CCFLAGS=(
                 "-fobjc-arc -arch arm64 -fmessage-length=0 -fno-strict-aliasing"

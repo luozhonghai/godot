@@ -123,6 +123,8 @@ bool OS_VISIONOS::iterate() {
         return true;
     }
 
+	_timing = timing;
+
     cp_frame_start_update(frame);
 
 	if (DisplayServer::get_singleton()) {
@@ -135,6 +137,10 @@ bool OS_VISIONOS::iterate() {
 //called from visionxr interface
 cp_frame_t OS_VISIONOS::getVisionFrame() {
 	return _frame;
+}
+
+cp_frame_timing_t OS_VISIONOS::getVisionTiming() {
+	return _timing;
 }
 
 void OS_VISIONOS::start() {

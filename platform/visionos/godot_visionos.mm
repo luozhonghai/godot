@@ -46,6 +46,7 @@ int add_cmdline(int p_argc, char **p_args) {
 //ref: ios app_delegate
 int visionos_main(int argc, char **argv, cp_layer_renderer_t layerRenderer) {
 
+	/*
 	size_t len = strlen(argv[0]);
 
 	while (len--) {
@@ -60,6 +61,7 @@ int visionos_main(int argc, char **argv, cp_layer_renderer_t layerRenderer) {
 		path[len] = 0;
 		chdir(path);
 	}
+	*/
 
 	os = new OS_VISIONOS(layerRenderer);
 

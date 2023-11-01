@@ -32,6 +32,8 @@ private:
 
 	cp_frame_t _frame;
 
+	cp_frame_timing_t _timing;
+
 	virtual void initialize_joypads() override {
 	}
 
@@ -43,6 +45,8 @@ public:
 	static OS_VISIONOS *get_singleton();
 
 	cp_frame_t getVisionFrame();
+
+	cp_frame_timing_t getVisionTiming();
 
 	OS_VISIONOS(cp_layer_renderer_t layerRenderer);
 	~OS_VISIONOS();

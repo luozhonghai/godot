@@ -29,7 +29,7 @@ void initialize_visionxr_module(ModuleInitializationLevel p_level) {
 			visionxr_interface->initialize();
 		}
 	}
-#ifdef VISIONOS_ENABLED
+#endif
 
 }
 
@@ -57,7 +57,7 @@ void uninitialize_visionxr_module(ModuleInitializationLevel p_level) {
 		// and release
 		visionxr_interface.unref();
 	}
-#ifdef VISIONOS_ENABLED
+#endif
 
 
 }

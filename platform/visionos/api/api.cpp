@@ -40,6 +40,14 @@ void unregister_visionos_api() {
 	godot_visionos_plugins_deinitialize();
 }
 
+void godot_visionos_plugins_initialize() {
+
+}
+
+void godot_visionos_plugins_deinitialize() {
+	
+}
+
 #else
 
 void register_visionos_api() {}

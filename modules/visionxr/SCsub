@@ -1,0 +1,19 @@
+#!/usr/bin/env python
+
+Import('env')
+Import("env_modules")
+
+env_visionos = env_modules.Clone()
+
+env_visionos.add_source_files(env.modules_sources, "*.cpp")
+env_visionos.add_source_files(env.modules_sources, "*.mm")
+
+
+# thirdparty_dir = "#thirdparty/vulkan"
+
+# env_visionos.Prepend(
+#         CPPPATH=[
+#             thirdparty_dir,
+#             thirdparty_dir + "/include",
+#         ]
+#     )

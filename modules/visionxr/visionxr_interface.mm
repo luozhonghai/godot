@@ -5,6 +5,10 @@
 #include "servers/rendering/renderer_rd/storage_rd/texture_storage.h"
 #include "servers/rendering/rendering_server_globals.h"
 #include "servers/rendering_server.h"
+#include "vulkan_bridge.h"
+#include "platform/visionos/display_server_visionos.h"
+#include "platform/visionos/os_visionos.h"
+#include "thirdparty/MoltenVK/mvk_config.h"
 
 StringName VisionXRInterface::get_name() const {
 	return StringName("VisionXR");
@@ -31,14 +35,35 @@ bool VisionXRInterface::is_initialized() const {
 };
 
 bool VisionXRInterface::initialize() {
+
+	XRServer *xr_server = XRServer::get_singleton();
+	ERR_FAIL_NULL_V(xr_server, false);
+
+
 	_device = DisplayServerVISIONOS::get_singleton()->get_vkdevice();
 	initialized = true;
 
-	MVKConfiguration config;
-    size_t len = sizeof(MVKConfiguration);
-    vkGetMoltenVKConfigurationMVK(nullptr, &config, &len);
-    config.prefillMetalCommandBuffers = MVK_CONFIG_PREFILL_METAL_COMMAND_BUFFERS_STYLE_DEFERRED_ENCODING;
-    vkSetMoltenVKConfigurationMVK(nullptr, &config, &len);
+	if (!initialized) {
+		MVKConfiguration config;
+		size_t len = sizeof(MVKConfiguration);
+		vkGetMoltenVKConfigurationMVK(nullptr, &config, &len);
+		config.prefillMetalCommandBuffers = MVK_CONFIG_PREFILL_METAL_COMMAND_BUFFERS_STYLE_DEFERRED_ENCODING;
+		vkSetMoltenVKConfigurationMVK(nullptr, &config, &len);
+
+		// we must create a tracker for our head
+		// head.instantiate();
+		// head->set_tracker_type(XRServer::TRACKER_HEAD);
+		// head->set_tracker_name("head");
+		// head->set_tracker_desc("Players head");
+		// xr_server->add_tracker(head);
+
+		// make this our primary interface
+		xr_server->set_primary_interface(this);
+
+		//last_ticks = OS::get_singleton()->get_ticks_usec();
+
+		initialized = true;
+	}
 }
 
 void VisionXRInterface::process() {
@@ -46,15 +71,15 @@ void VisionXRInterface::process() {
 
 void VisionXRInterface::pre_render() {
 
-	_frame = OS_VISIONOS::getVisionFrame();
-	cp_frame_timing_t timing = OS_VISIONOS::getVisionTiming();
+	_frame = OS_VISIONOS::get_singleton()->getVisionFrame();
+	cp_frame_timing_t timing = OS_VISIONOS::get_singleton()->getVisionTiming();
 
-	cp_frame_end_update(frame);
+	cp_frame_end_update(_frame);
         
 	cp_time_wait_until(cp_frame_timing_get_optimal_input_time(timing));
         
-	cp_frame_start_submission(frame);
-	_drawable = cp_frame_query_drawable(frame);
+	cp_frame_start_submission(_frame);
+	_drawable = cp_frame_query_drawable(_frame);
 	if (_drawable == nullptr) {
 		return;
 	}
@@ -124,9 +149,9 @@ void VisionXRInterface::prepareColor(cp_drawable_t drawable, size_t index)
 	color.format = color_format;
 
 	RenderingServer *rendering_server = RenderingServer::get_singleton();
-	ERR_FAIL_NULL_V(rendering_server, false);
+	//ERR_FAIL_NULL_V(rendering_server, false);
 	RenderingDevice *rendering_device = rendering_server->get_rendering_device();
-	ERR_FAIL_NULL_V(rendering_device, false);
+	//ERR_FAIL_NULL_V(rendering_device, false);
 
 	RenderingDevice::DataFormat format = RenderingDevice::DATA_FORMAT_R16G16B16A16_SFLOAT;
 	RenderingDevice::TextureSamples samples = RenderingDevice::TEXTURE_SAMPLES_1;
@@ -150,7 +175,7 @@ void VisionXRInterface::prepareColor(cp_drawable_t drawable, size_t index)
 				1,
 				1);
 
-	color_texture_rids[index] = image_rid;
+	color_texture_rids.push_back(image_rid);
 }
 
 void VisionXRInterface::prepareDepth(cp_drawable_t drawable, size_t index)
@@ -187,5 +212,90 @@ void VisionXRInterface::_bind_methods() {
 	// ADD_SIGNAL(MethodInfo("session_focussed"));
 	// ADD_SIGNAL(MethodInfo("session_visible"));
 	// ADD_SIGNAL(MethodInfo("pose_recentered"));
+};
+
+
+void VulkanBridge::vision_encode_present(VkExportMetalCommandBufferInfoEXT exportMetalCmdBufferObj)
+{
+    Ref<XRInterface> xr_interface;
+    if (XRServer::get_singleton() != nullptr) {
+		xr_interface = XRServer::get_singleton()->get_primary_interface();
+		//todo: fix it
+		((VisionXRInterface*)*xr_interface)->post_encode_present(exportMetalCmdBufferObj.mtlCommandBuffer);
+	}
+}
+
+Transform3D VisionXRInterface::get_camera_transform() {
+	_THREAD_SAFE_METHOD_
+
+	Transform3D transform_for_eye;
+
+	XRServer *xr_server = XRServer::get_singleton();
+	ERR_FAIL_NULL_V(xr_server, transform_for_eye);
+
+	if (initialized) {
+		//float world_scale = xr_server->get_world_scale();
+
+		// just scale our origin point of our transform
+		//Transform3D _head_transform = head_transform;
+		//_head_transform.origin *= world_scale;
+
+		//transform_for_eye = (xr_server->get_reference_frame()) * _head_transform;
+	}
+
+	return transform_for_eye;
+}
+
+Transform3D VisionXRInterface::get_transform_for_view(uint32_t p_view, const Transform3D &p_cam_transform) {
+	_THREAD_SAFE_METHOD_
+
+	Transform3D transform_for_eye;
+
+	XRServer *xr_server = XRServer::get_singleton();
+	ERR_FAIL_NULL_V(xr_server, transform_for_eye);
+
+	return transform_for_eye;
+
+}
+
+Projection VisionXRInterface::get_projection_for_view(uint32_t p_view, double p_aspect, double p_z_near, double p_z_far) {
+	_THREAD_SAFE_METHOD_
+
+	Projection eye;
+
+	//aspect = p_aspect;
+	//eye.set_for_hmd(p_view + 1, p_aspect, intraocular_dist, display_width, display_to_lens, oversample, p_z_near, p_z_far);
+
+	return eye;
+};
+
+Dictionary VisionXRInterface::get_system_info() {
+	Dictionary dict;
+
+	dict[SNAME("XRRuntimeName")] = String("Godot Vision XR interface");
+	dict[SNAME("XRRuntimeVersion")] = String("");
+
+	return dict;
+}
+
+void VisionXRInterface::uninitialize() {
+	if (initialized) {
+		// do any cleanup here...
+		XRServer *xr_server = XRServer::get_singleton();
+		if (xr_server != nullptr) {
+			// if (head.is_valid()) {
+			// 	xr_server->remove_tracker(head);
+
+			// 	head.unref();
+			// }
+
+			if (xr_server->get_primary_interface() == this) {
+				// no longer our primary interface
+				xr_server->set_primary_interface(nullptr);
+			}
+		}
+
+		initialized = false;
+	};
 };
 

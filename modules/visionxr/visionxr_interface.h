@@ -2,8 +2,14 @@
 #ifndef VISIONXR_INTERFACE_H
 #define VISIONXR_INTERFACE_H
 
+#ifdef USE_VOLK
+#include <volk.h>
+#else
+#include <vulkan/vulkan.h>
+#endif
 #include "servers/xr/xr_interface.h"
 #import <Foundation/Foundation.h>
+#import <CompositorServices/CompositorServices.h>
 #import <Metal/Metal.h>
 #import <MetalKit/MetalKit.h>
 #import <ARKit/ARKit.h>
@@ -30,8 +36,17 @@ public:
 	virtual bool is_initialized() const override;
 	virtual bool initialize() override;
 
+	virtual void uninitialize() override;
+	virtual Dictionary get_system_info() override;
+
 	virtual uint32_t get_view_count() override;
 	virtual Size2 get_render_target_size() override;
+
+	void post_encode_present(id<MTLCommandBuffer> mtlCommandBuffer);
+
+	virtual Transform3D get_camera_transform() override;
+	virtual Transform3D get_transform_for_view(uint32_t p_view, const Transform3D &p_cam_transform) override;
+	virtual Projection get_projection_for_view(uint32_t p_view, double p_aspect, double p_z_near, double p_z_far) override;
 
 protected:
 	static void _bind_methods();
@@ -39,6 +54,10 @@ protected:
 	Size2 target_size;
 
 private:
+
+	// at a minimum we need a tracker for our head
+	//Ref<XRPositionalTracker> head;
+	//Transform3D head_transform;
 
 	typedef struct {
         VkFormat format;
@@ -59,6 +78,9 @@ private:
 	Vector<RID> color_texture_rids;
 	Vector<RID> depth_texture_rids;
 
+	ar_session_t _arSession;
+    ar_world_tracking_provider_t _worldTrackingProvider;
+
 	void prepareDepth(cp_drawable_t drawable, size_t index);
     void prepareColor(cp_drawable_t drawable, size_t index);
 
@@ -75,15 +97,24 @@ private:
         return outDeviceAnchor;
     }
 
+	void runWorldTrackingARSession() {
+        ar_world_tracking_configuration_t worldTrackingConfiguration = ar_world_tracking_configuration_create();
+        _worldTrackingProvider = ar_world_tracking_provider_create(worldTrackingConfiguration);
+
+        ar_data_providers_t dataProviders = ar_data_providers_create_with_data_providers(_worldTrackingProvider, nil);
+
+        _arSession = ar_session_create();
+        ar_session_run(_arSession, dataProviders);
+    }
+
+
 };
 
-inline uint32_t VisionXRInterface::get_view_count() {
-	return 2;
-}
 
 inline Size2 VisionXRInterface::get_render_target_size() {
 	return target_size;
 }
+
 
 
 #endif

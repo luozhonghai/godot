@@ -41,7 +41,7 @@ bool VisionXRInterface::initialize() {
 
 
 	_device = DisplayServerVISIONOS::get_singleton()->get_vkdevice();
-	initialized = true;
+	initialized = false;
 
 	if (!initialized) {
 		MVKConfiguration config;
@@ -63,6 +63,10 @@ bool VisionXRInterface::initialize() {
 		//last_ticks = OS::get_singleton()->get_ticks_usec();
 
 		initialized = true;
+
+		runWorldTrackingARSession();
+
+		std::cout << "VisionXRInterface initialized." << std::endl;
 	}
 }
 
@@ -110,7 +114,8 @@ void VisionXRInterface::pre_render() {
 uint32_t VisionXRInterface::get_view_count() {
 	// TODO set this based on our configuration
 	int count = cp_drawable_get_view_count(_drawable);
-	return count;
+	std::cout << "visionxr interface cp_drawable_get_view_count: " << count << std::endl;
+	return 1;
 }
 
 

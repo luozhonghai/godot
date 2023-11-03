@@ -620,6 +620,10 @@ void RendererViewport::draw_viewports() {
 
 		Viewport *vp = sorted_active_viewports[i];
 
+#ifdef VISIONOS_ENABLED
+		vp->use_xr = true;
+#endif
+
 		if (vp->update_mode == RS::VIEWPORT_UPDATE_DISABLED) {
 			continue;
 		}
@@ -672,6 +676,8 @@ void RendererViewport::draw_viewports() {
 	int objects_drawn = 0;
 	int draw_calls_used = 0;
 
+	print_line("sorted_active_viewports: " + itos(sorted_active_viewports.size()));
+
 	for (int i = 0; i < sorted_active_viewports.size(); i++) {
 		Viewport *vp = sorted_active_viewports[i];
 
@@ -696,6 +702,7 @@ void RendererViewport::draw_viewports() {
 				// render...
 				RSG::scene->set_debug_draw_mode(vp->debug_draw);
 
+				print_line("draw viewport from xr interface");
 				// and draw viewport
 				_draw_viewport(vp);
 
@@ -769,8 +776,11 @@ void RendererViewport::draw_viewports() {
 	total_draw_calls_used = draw_calls_used;
 
 	RENDER_TIMESTAMP("< Render Viewports");
+
+#ifndef VISIONOS_ENABLED
 	//this needs to be called to make screen swapping more efficient
 	RSG::rasterizer->prepare_for_blitting_render_targets();
+#endif
 
 	for (const KeyValue<int, Vector<BlitToScreen>> &E : blit_to_screen_list) {
 		RSG::rasterizer->blit_render_targets_to_screen(E.key, E.value.ptr(), E.value.size());

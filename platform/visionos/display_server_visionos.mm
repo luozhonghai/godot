@@ -1,5 +1,8 @@
 
 #import "display_server_visionos.h"
+#include <iostream>
+#include <string>
+
 //parent(DisplayServer) constructor method will set singleton to this
 DisplayServerVISIONOS *DisplayServerVISIONOS::get_singleton() {
 	return (DisplayServerVISIONOS *)DisplayServer::get_singleton();
@@ -8,6 +11,7 @@ DisplayServerVISIONOS *DisplayServerVISIONOS::get_singleton() {
 //created from main::setup2(), earlier than xr server/interface.
 DisplayServerVISIONOS::DisplayServerVISIONOS(const String &p_rendering_driver, WindowMode p_mode, DisplayServer::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Error &r_error) {
 
+	std::cout<< "DisplayServerVISIONOS" << std::endl;
     rendering_driver = p_rendering_driver;
 
 #if defined(VULKAN_ENABLED)
@@ -22,8 +26,25 @@ DisplayServerVISIONOS::DisplayServerVISIONOS(const String &p_rendering_driver, W
 			ERR_FAIL_MSG("Failed to initialize Vulkan context");
 		}
 
+		std::cout<< "DisplayServerVISIONOS RenderingDeviceVulkan" << std::endl;
+
+		Size2i size = Size2i(0, 0) * screen_get_max_scale();
+		CALayer *layer = nullptr;
+		if (context_vulkan->window_create(MAIN_WINDOW_ID, p_vsync_mode, layer, size.width, size.height) != OK) {
+			memdelete(context_vulkan);
+			context_vulkan = nullptr;
+			r_error = ERR_UNAVAILABLE;
+			ERR_FAIL_MSG("Failed to create Vulkan window.");
+		}
+
+
         rendering_device_vulkan = memnew(RenderingDeviceVulkan);
+
+		std::cout<< "memnew(RenderingDeviceVulkan)" << std::endl;
+
 		rendering_device_vulkan->initialize(context_vulkan);
+
+		std::cout<< "rendering_device_vulkan->initialize(context_vulkan)" << std::endl;
 
 		_device = context_vulkan->get_device();
 

@@ -2093,6 +2093,7 @@ Error Main::setup2() {
 	set_current_thread_safe_for_nodes(true);
 
 	// Print engine name and version
+	print_line("main setup2");
 	print_line(String(VERSION_NAME) + " v" + get_full_version_string() + " - " + String(VERSION_WEBSITE));
 
 	OS::get_singleton()->benchmark_begin_measure("servers");
@@ -2197,6 +2198,7 @@ Error Main::setup2() {
 		// rendering_driver now held in static global String in main and initialized in setup()
 		Error err;
 		display_server = DisplayServer::create(display_driver_idx, rendering_driver, window_mode, window_vsync_mode, window_flags, window_position, window_size, init_screen, err);
+		print_line("finish DisplayServer::create");
 		if (err != OK || display_server == nullptr) {
 			// We can't use this display server, try other ones as fallback.
 			// Skip headless (always last registered) because that's not what users
@@ -2315,6 +2317,8 @@ Error Main::setup2() {
 	xr_server = memnew(XRServer);
 
 	register_core_singletons();
+
+	print_line("finish xr_server");
 
 	MAIN_PRINT("Main: Setup Logo");
 
@@ -2598,6 +2602,7 @@ static MainTimerSync main_timer_sync;
 bool Main::start() {
 	ERR_FAIL_COND_V(!_start_success, false);
 
+	print_line("Main::start ");
 	bool has_icon = false;
 	String positional_arg;
 	String game_path;

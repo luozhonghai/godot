@@ -1194,6 +1194,8 @@ Error VulkanContext::_create_physical_device(VkSurfaceKHR p_surface) {
 			vkGetPhysicalDeviceQueueFamilyProperties(physical_devices[i], &device_queue_family_count, nullptr);
 			VkQueueFamilyProperties *device_queue_props = (VkQueueFamilyProperties *)malloc(device_queue_family_count * sizeof(VkQueueFamilyProperties));
 			vkGetPhysicalDeviceQueueFamilyProperties(physical_devices[i], &device_queue_family_count, device_queue_props);
+			
+#ifndef VISIONOS_ENABLED
 			for (uint32_t j = 0; j < device_queue_family_count; j++) {
 				VkBool32 supports;
 				vkGetPhysicalDeviceSurfaceSupportKHR(physical_devices[i], j, p_surface, &supports);
@@ -1203,6 +1205,9 @@ Error VulkanContext::_create_physical_device(VkSurfaceKHR p_surface) {
 					continue;
 				}
 			}
+#else
+			present_supported = true;
+#endif
 			String name = props.deviceName;
 			String vendor = "Unknown";
 			String dev_type;
@@ -1333,7 +1338,9 @@ Error VulkanContext::_create_physical_device(VkSurfaceKHR p_surface) {
 	vkGetPhysicalDeviceFeatures(gpu, &physical_device_features);
 
 	// Check required features
+#ifndef VISIONOS_ENABLED
 	ERR_FAIL_COND_V_MSG(!physical_device_features.imageCubeArray, ERR_CANT_CREATE, "Your GPU doesn't support image cube arrays which are required to use the Vulkan-based renderers in Godot.");
+#endif
 	ERR_FAIL_COND_V_MSG(!physical_device_features.independentBlend, ERR_CANT_CREATE, "Your GPU doesn't support independentBlend which is required to use the Vulkan-based renderers in Godot.");
 
 	physical_device_features.robustBufferAccess = false; // Turn off robust buffer access, which can hamper performance on some hardware.
@@ -1480,6 +1487,8 @@ Error VulkanContext::_create_device() {
 }
 
 Error VulkanContext::_initialize_queues(VkSurfaceKHR p_surface) {
+
+#ifndef VISIONOS_ENABLED
 	// Iterate over each queue to learn whether it supports presenting:
 	VkBool32 *supportsPresent = (VkBool32 *)malloc(queue_family_count * sizeof(VkBool32));
 	for (uint32_t i = 0; i < queue_family_count; i++) {
@@ -1516,6 +1525,19 @@ Error VulkanContext::_initialize_queues(VkSurfaceKHR p_surface) {
 	}
 
 	free(supportsPresent);
+
+#else
+	uint32_t graphicsQueueFamilyIndex = UINT32_MAX;
+	uint32_t presentQueueFamilyIndex = UINT32_MAX;
+	for (uint32_t i = 0; i < queue_family_count; i++) {
+		if ((queue_props[i].queueFlags & VK_QUEUE_GRAPHICS_BIT) != 0) {
+			if (graphicsQueueFamilyIndex == UINT32_MAX) {
+				graphicsQueueFamilyIndex = i;
+			}
+		}
+	}
+	presentQueueFamilyIndex = graphicsQueueFamilyIndex;
+#endif
 
 	// Generate error if could not find both a graphics and a present queue.
 	ERR_FAIL_COND_V_MSG(graphicsQueueFamilyIndex == UINT32_MAX || presentQueueFamilyIndex == UINT32_MAX, ERR_CANT_CREATE,
@@ -1556,6 +1578,7 @@ Error VulkanContext::_initialize_queues(VkSurfaceKHR p_surface) {
 	}
 
 	// Get the list of VkFormat's that are supported:
+#ifndef VISIONOS_ENABLED
 	uint32_t formatCount;
 	VkResult err = fpGetPhysicalDeviceSurfaceFormatsKHR(gpu, p_surface, &formatCount, nullptr);
 	ERR_FAIL_COND_V(err, ERR_CANT_CREATE);
@@ -1603,6 +1626,11 @@ Error VulkanContext::_initialize_queues(VkSurfaceKHR p_surface) {
 	}
 
 	free(surfFormats);
+
+#else
+	format = VK_FORMAT_R16G16B16A16_SFLOAT;
+	color_space = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
+#endif
 
 	Error serr = _create_semaphores();
 	if (serr) {

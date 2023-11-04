@@ -722,6 +722,11 @@ SkyRD::SkyRD() {
 	roughness_layers = GLOBAL_GET("rendering/reflections/sky_reflections/roughness_layers");
 	sky_ggx_samples_quality = GLOBAL_GET("rendering/reflections/sky_reflections/ggx_samples");
 	sky_use_cubemap_array = GLOBAL_GET("rendering/reflections/sky_reflections/texture_array_reflections");
+
+	if(!RD::get_singleton()->has_feature(RD::SUPPORTS_CUBEMAP_ARRAY)) {
+		print_line("feature SUPPORTS_CUBEMAP_ARRAY false");
+		sky_use_cubemap_array = false;
+	}
 }
 
 void SkyRD::init() {

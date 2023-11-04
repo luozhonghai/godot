@@ -8556,13 +8556,22 @@ void RenderingDeviceVulkan::_finalize_command_bufers() {
 		vkEndCommandBuffer(frames[frame].draw_command_buffer);
 	}
 
+	print_line("_finalize_command_bufers");
 #ifdef VISIONOS_ENABLED
-	VkExportMetalObjectsInfoEXT exportMetalObj;
-	VkExportMetalCommandBufferInfoEXT exportMetalCmdBufferObj;
-	exportMetalObj.pNext = &exportMetalCmdBufferObj;
 
+	//VkCommandBuffer frame_command_buffer;// = frames[frame].draw_command_buffer;
+	
+	//exportMetalCmdBufferObj.commandBuffer = VK_NULL_HANDLE;
+
+	VkExportMetalCommandBufferInfoEXT exportMetalCmdBufferObj;
 	exportMetalCmdBufferObj.sType = VK_STRUCTURE_TYPE_EXPORT_METAL_COMMAND_BUFFER_INFO_EXT;
 	exportMetalCmdBufferObj.commandBuffer = frames[frame].draw_command_buffer;
+	exportMetalCmdBufferObj.pNext = nullptr;
+
+	VkExportMetalObjectsInfoEXT exportMetalObj;	
+	exportMetalObj.pNext = &exportMetalCmdBufferObj;
+	exportMetalObj.sType = VK_STRUCTURE_TYPE_EXPORT_METAL_OBJECTS_INFO_EXT;
+
 	vkExportMetalObjectsEXT(device, &exportMetalObj);
 
 	VulkanBridge::vision_encode_present(exportMetalCmdBufferObj);
@@ -9587,6 +9596,9 @@ bool RenderingDeviceVulkan::has_feature(const Features p_feature) const {
 		case SUPPORTS_FRAGMENT_SHADER_WITH_ONLY_SIDE_EFFECTS: {
 			return true;
 		} break;
+		case SUPPORTS_CUBEMAP_ARRAY: {
+			return context->get_physical_device_features().imageCubeArray;
+		}
 		default: {
 			return false;
 		}

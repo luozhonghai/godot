@@ -392,6 +392,9 @@ RenderingServerDefault::RenderingServerDefault(bool p_create_thread) :
 
 	create_thread = p_create_thread;
 
+	if(create_thread)
+		print_line("rendering server create thread");
+
 	if (!p_create_thread) {
 		server_thread = Thread::get_caller_id();
 	} else {

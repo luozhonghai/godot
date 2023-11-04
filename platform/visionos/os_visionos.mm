@@ -15,7 +15,7 @@
 #endif
 #endif
 
-
+#include <iostream>
 OS_VISIONOS *OS_VISIONOS::get_singleton() {
 	return (OS_VISIONOS *)OS::get_singleton();
 }
@@ -115,6 +115,7 @@ bool OS_VISIONOS::iterate() {
     if (frame == nullptr) {
         return true;
     }
+	std::cout << "cp_layer_renderer_query_next_frame" << std::endl;
 
 	_frame = frame;
 
@@ -130,6 +131,10 @@ bool OS_VISIONOS::iterate() {
 	if (DisplayServer::get_singleton()) {
 		DisplayServer::get_singleton()->process_events();
 	}
+
+	//!!!important
+	//workaround for visionos frames++
+	Main::force_redraw();
 
 	return Main::iteration();
 }

@@ -3438,16 +3438,22 @@ bool Main::iteration() {
 	}
 	message_queue->flush();
 
+	print_line("rendering server sync");
 	RenderingServer::get_singleton()->sync(); //sync if still drawing from previous frames.
 
 	if (DisplayServer::get_singleton()->can_any_window_draw() &&
 			RenderingServer::get_singleton()->is_render_loop_enabled()) {
 		if ((!force_redraw_requested) && OS::get_singleton()->is_in_low_processor_usage_mode()) {
+			print_line("rendering server has_changed?");
 			if (RenderingServer::get_singleton()->has_changed()) {
+
+				print_line("rendering server changed draw");
 				RenderingServer::get_singleton()->draw(true, scaled_step); // flush visual commands
 				Engine::get_singleton()->frames_drawn++;
 			}
 		} else {
+
+			print_line("rendering server draw");
 			RenderingServer::get_singleton()->draw(true, scaled_step); // flush visual commands
 			Engine::get_singleton()->frames_drawn++;
 			force_redraw_requested = false;

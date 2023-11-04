@@ -83,6 +83,9 @@ void VisionXRInterface::pre_render() {
 	cp_time_wait_until(cp_frame_timing_get_optimal_input_time(timing));
         
 	cp_frame_start_submission(_frame);
+
+	std::cout << "cp_frame_start_submission " << std::endl;
+
 	_drawable = cp_frame_query_drawable(_frame);
 	if (_drawable == nullptr) {
 		return;
@@ -202,10 +205,12 @@ Vector<BlitToScreen> VisionXRInterface::post_draw_viewport(RID p_render_target, 
 
 void VisionXRInterface::post_encode_present(id<MTLCommandBuffer> mtlCommandBuffer)
 {
+	std::cout << "cp_drawable_encode_present " << std::endl;
 	cp_drawable_encode_present(_drawable, mtlCommandBuffer);
 }
 void VisionXRInterface::end_frame() {
 
+	std::cout << "cp_frame_end_submission " << std::endl;
 	cp_frame_end_submission(_frame);
 }
 

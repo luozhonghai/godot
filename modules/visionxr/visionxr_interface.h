@@ -8,6 +8,7 @@
 #include <vulkan/vulkan.h>
 #endif
 #include "servers/xr/xr_interface.h"
+#include <iostream>
 #import <Foundation/Foundation.h>
 #import <CompositorServices/CompositorServices.h>
 #import <Metal/Metal.h>

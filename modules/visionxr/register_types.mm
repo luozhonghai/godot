@@ -23,6 +23,8 @@ void initialize_visionxr_module(ModuleInitializationLevel p_level) {
 	if(xr_server) {
 		visionxr_interface.instantiate();
 
+		std::cout << "visionxr interface register" << std::endl;
+
 		xr_server->add_interface(visionxr_interface);
 
 		if (visionxr_interface->initialize_on_startup()) {

@@ -34,6 +34,7 @@
 #include "core/io/dir_access.h"
 
 void RendererCompositorRD::prepare_for_blitting_render_targets() {
+	print_line("prepare_for_blitting_render_targets");
 	RD::get_singleton()->prepare_screen_for_drawing();
 }
 
@@ -167,6 +168,8 @@ void RendererCompositorRD::set_boot_image(const Ref<Image> &p_image, const Color
 		return;
 	}
 
+	print_line("set_boot_image");
+	
 	RD::get_singleton()->prepare_screen_for_drawing();
 
 	RID texture = texture_storage->texture_allocate();

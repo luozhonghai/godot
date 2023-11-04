@@ -2390,6 +2390,15 @@ Error VulkanContext::swap_buffers() {
 	command_buffer_queue.write[0] = nullptr;
 	command_buffer_count = 1;
 
+#ifdef VISIONOS_ENABLED
+	frame_index += 1;
+	frame_index %= FRAME_LAG;
+
+	buffers_prepared = false;
+	return OK;
+
+#endif
+
 	if (separate_present_queue) {
 		// If we are using separate queues, change image ownership to the
 		// present queue before presenting, waiting for the draw complete

@@ -390,7 +390,7 @@ void XRServer::pre_render() {
 
 void XRServer::end_frame() {
 	// called from RenderingServerDefault after Vulkan queues have been submitted
-
+	print_line("xr server end_frame");
 	// process all active interfaces
 	for (int i = 0; i < interfaces.size(); i++) {
 		if (!interfaces[i].is_valid()) {

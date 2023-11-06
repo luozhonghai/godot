@@ -118,6 +118,10 @@ public:
 
 	virtual void process_events() override;
 
+	virtual void window_set_vsync_mode(DisplayServer::VSyncMode p_vsync_mode, WindowID p_window = MAIN_WINDOW_ID) override;
+	virtual DisplayServer::VSyncMode window_get_vsync_mode(WindowID p_vsync_mode) const override;
+
+
 };
 
 #endif // DISPLAY_SERVER_VISIONOS_H

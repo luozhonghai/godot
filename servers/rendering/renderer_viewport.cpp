@@ -676,7 +676,7 @@ void RendererViewport::draw_viewports() {
 	int objects_drawn = 0;
 	int draw_calls_used = 0;
 
-	print_line("sorted_active_viewports: " + itos(sorted_active_viewports.size()));
+	//print_line("sorted_active_viewports: " + itos(sorted_active_viewports.size()));
 
 	for (int i = 0; i < sorted_active_viewports.size(); i++) {
 		Viewport *vp = sorted_active_viewports[i];
@@ -702,7 +702,7 @@ void RendererViewport::draw_viewports() {
 				// render...
 				RSG::scene->set_debug_draw_mode(vp->debug_draw);
 
-				print_line("draw viewport from xr interface");
+				//print_line("draw viewport from xr interface");
 				// and draw viewport
 				_draw_viewport(vp);
 
@@ -890,6 +890,7 @@ void RendererViewport::viewport_set_active(RID p_viewport, bool p_active) {
 	Viewport *viewport = viewport_owner.get_or_null(p_viewport);
 	ERR_FAIL_COND(!viewport);
 
+	print_line("RendererViewport viewport_set_active");
 	if (p_active) {
 		ERR_FAIL_COND_MSG(active_viewports.has(viewport), "Can't make active a Viewport that is already active.");
 		viewport->occlusion_buffer_dirty = true;

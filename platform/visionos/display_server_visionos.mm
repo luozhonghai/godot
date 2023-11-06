@@ -146,3 +146,22 @@ DisplayServer::WindowID DisplayServerVISIONOS::get_window_at_screen_position(con
 void DisplayServerVISIONOS::process_events() {
 	//Input::get_singleton()->flush_buffered_events();
 }
+
+void DisplayServerVISIONOS::window_set_vsync_mode(DisplayServer::VSyncMode p_vsync_mode, WindowID p_window) {
+	_THREAD_SAFE_METHOD_
+#if defined(VULKAN_ENABLED)
+	if (context_vulkan) {
+		context_vulkan->set_vsync_mode(p_window, p_vsync_mode);
+	}
+#endif
+}
+
+DisplayServer::VSyncMode DisplayServerVISIONOS::window_get_vsync_mode(WindowID p_window) const {
+	_THREAD_SAFE_METHOD_
+#if defined(VULKAN_ENABLED)
+	if (context_vulkan) {
+		return context_vulkan->get_vsync_mode(p_window);
+	}
+#endif
+	return DisplayServer::VSYNC_ENABLED;
+}

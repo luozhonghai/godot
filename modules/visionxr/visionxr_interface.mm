@@ -20,10 +20,14 @@ uint32_t VisionXRInterface::get_capabilities() const {
 
 RID VisionXRInterface::get_color_texture() {
 	return XRInterface::get_color_texture();
+	//std::cout << "visionxr get_color_texture" << std::endl;
+	//return color_texture_rids[0];
 }
 
 RID VisionXRInterface::get_depth_texture() {
 	return XRInterface::get_depth_texture();
+	//std::cout << "visionxr get_depth_texture" << std::endl;
+	//return depth_texture_rids[0];
 }
 
 bool VisionXRInterface::initialize_on_startup() const {
@@ -84,7 +88,7 @@ void VisionXRInterface::pre_render() {
         
 	cp_frame_start_submission(_frame);
 
-	std::cout << "cp_frame_start_submission " << std::endl;
+	//std::cout << "cp_frame_start_submission " << std::endl;
 
 	_drawable = cp_frame_query_drawable(_frame);
 	if (_drawable == nullptr) {
@@ -117,7 +121,7 @@ void VisionXRInterface::pre_render() {
 uint32_t VisionXRInterface::get_view_count() {
 	// TODO set this based on our configuration
 	int count = cp_drawable_get_view_count(_drawable);
-	std::cout << "visionxr interface cp_drawable_get_view_count: " << count << std::endl;
+	//std::cout << "visionxr interface cp_drawable_get_view_count: " << count << std::endl;
 	return 1;
 }
 
@@ -188,7 +192,66 @@ void VisionXRInterface::prepareColor(cp_drawable_t drawable, size_t index)
 
 void VisionXRInterface::prepareDepth(cp_drawable_t drawable, size_t index)
 {
-	
+	VkResult result;
+    const VkFormat depth_format = VK_FORMAT_D32_SFLOAT;
+
+	id<MTLTexture> depth_texture = cp_drawable_get_depth_texture(drawable, index);
+    VkImportMetalTextureInfoEXT metal_import = {
+                .sType      = VK_STRUCTURE_TYPE_IMPORT_METAL_TEXTURE_INFO_EXT,
+                .plane      = VK_IMAGE_ASPECT_DEPTH_BIT,
+                .mtlTexture = depth_texture
+    };
+    
+    VkImageCreateInfo image = {
+        .sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
+        .pNext = &metal_import,
+        .imageType = VK_IMAGE_TYPE_2D,
+        .format = depth_format,
+        //.extent = {color_texture.width, color_texture.height, color_texture.depth},
+        .mipLevels = 1,
+        .arrayLayers = 1,
+        .samples = VK_SAMPLE_COUNT_1_BIT,
+        .tiling = VK_IMAGE_TILING_OPTIMAL,
+        .usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
+        .flags = 0,
+    };
+    image.extent.width = depth_texture.width;
+    image.extent.height = depth_texture.height;
+    image.extent.depth = depth_texture.depth;
+    
+    /* create image */
+    result = vkCreateImage(_device, &image, NULL, &depth.image);
+
+	depth.format = depth_format;
+
+	RenderingServer *rendering_server = RenderingServer::get_singleton();
+	//ERR_FAIL_NULL_V(rendering_server, false);
+	RenderingDevice *rendering_device = rendering_server->get_rendering_device();
+	//ERR_FAIL_NULL_V(rendering_device, false);
+
+	RenderingDevice::DataFormat format = RenderingDevice::DATA_FORMAT_R16G16B16A16_SFLOAT;
+	RenderingDevice::TextureSamples samples = RenderingDevice::TEXTURE_SAMPLES_1;
+	uint64_t usage_flags = RenderingDevice::TEXTURE_USAGE_SAMPLING_BIT | RenderingDevice::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT;
+
+	uint32_t p_width = depth_texture.width;
+	uint32_t p_height = depth_texture.width;
+
+	target_size.width = p_width;
+	target_size.height = p_height;
+
+
+	RID image_rid = rendering_device->texture_create_from_extension(
+				RenderingDevice::TEXTURE_TYPE_2D,
+				format,
+				samples,
+				usage_flags,
+				(uint64_t)depth.image,
+				p_width,
+				p_height,
+				1,
+				1);
+
+	depth_texture_rids.push_back(image_rid);
 }
 
 bool VisionXRInterface::pre_draw_viewport(RID p_render_target) 
@@ -253,6 +316,8 @@ Transform3D VisionXRInterface::get_camera_transform() {
 		//transform_for_eye = (xr_server->get_reference_frame()) * _head_transform;
 	}
 
+	std::cout<< "visionxr get_camera_transform " << std::endl;
+
 	return transform_for_eye;
 }
 
@@ -263,6 +328,8 @@ Transform3D VisionXRInterface::get_transform_for_view(uint32_t p_view, const Tra
 
 	XRServer *xr_server = XRServer::get_singleton();
 	ERR_FAIL_NULL_V(xr_server, transform_for_eye);
+
+	std::cout<< "visionxr get_transform_for_view " << std::endl;
 
 	return transform_for_eye;
 
@@ -275,6 +342,11 @@ Projection VisionXRInterface::get_projection_for_view(uint32_t p_view, double p_
 
 	//aspect = p_aspect;
 	//eye.set_for_hmd(p_view + 1, p_aspect, intraocular_dist, display_width, display_to_lens, oversample, p_z_near, p_z_far);
+
+	// Failed to get from our OpenXR device? Default to some sort of sensible camera matrix..
+	eye.set_for_hmd(p_view + 1, 1.0, 6.0, 14.5, 4.0, 1.5, p_z_near, p_z_far);
+
+	std::cout<< "visionxr get_projection_for_view near:  " << p_z_near  << ", camera far: " << p_z_far << std::endl;
 
 	return eye;
 };

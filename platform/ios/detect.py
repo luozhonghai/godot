@@ -26,7 +26,7 @@ def get_opts():
         (
             "IOS_TOOLCHAIN_PATH",
             "Path to iOS toolchain",
-            "/Applications/Xcode-beta.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain",
+            "~/Downloads/Xcode-beta.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain",
         ),
         ("IOS_SDK_PATH", "Path to the iOS SDK", ""),
         BoolVariable("ios_simulator", "Build for iOS Simulator", False),

@@ -535,7 +535,10 @@ RID RenderForwardMobile::_setup_render_pass_uniform_set(RenderListType p_render_
 		RD::get_singleton()->free(render_pass_uniform_sets[p_index]);
 	}
 
+	print_line("mobile setup render pass uniform set start");
 	render_pass_uniform_sets[p_index] = RD::get_singleton()->uniform_set_create(uniforms, scene_shader.default_shader_rd, RENDER_PASS_UNIFORM_SET);
+	print_line("mobile setup render pass uniform set end");
+
 	return render_pass_uniform_sets[p_index];
 }
 
@@ -612,6 +615,7 @@ void RenderForwardMobile::_pre_opaque_render(RenderDataRD *p_render_data) {
 
 	//prepare shadow rendering
 	if (render_shadows) {
+		print_line("render shadows");
 		RENDER_TIMESTAMP("Render Shadows");
 
 		_render_shadow_begin();
@@ -774,6 +778,7 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 	_setup_lightmaps(p_render_data, *p_render_data->lightmaps, p_render_data->scene_data->cam_transform);
 	_setup_environment(p_render_data, is_reflection_probe, screen_size, !is_reflection_probe, p_default_bg_color, false);
 
+	print_line("after _setup_environment");
 	_update_render_base_uniform_set(); //may have changed due to the above (light buffer enlarged, as an example)
 
 	RD::get_singleton()->draw_command_end_label(); // Render Setup
@@ -1066,6 +1071,11 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 
 			RD::get_singleton()->draw_command_end_label(); // Render Transparent Subpass
 		}
+	}
+
+	if(using_subpass_post_process)
+	{
+		print_line("using_subpass_post_process true");
 	}
 
 	if (rb_data.is_valid() && !using_subpass_post_process) {
@@ -1374,6 +1384,7 @@ void RenderForwardMobile::_render_material(const Transform3D &p_cam_transform, c
 
 	RD::get_singleton()->draw_command_begin_label("Render 3D Material");
 
+    print_line("render 3d material");
 	_update_render_base_uniform_set();
 
 	RenderSceneDataRD scene_data;
@@ -1703,7 +1714,10 @@ void RenderForwardMobile::_update_render_base_uniform_set() {
 
 		uniforms.append_array(material_storage->get_default_sampler_uniforms(SAMPLERS_BINDING_FIRST_INDEX));
 
+		print_line("mobile update render base uniform set start");
 		render_base_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, scene_shader.default_shader_rd, SCENE_UNIFORM_SET);
+		print_line("mobile update render base uniform set end");
+
 	}
 }
 

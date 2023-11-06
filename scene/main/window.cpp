@@ -740,6 +740,7 @@ void Window::update_mouse_cursor_state() {
 
 void Window::show() {
 	ERR_MAIN_THREAD_GUARD;
+	print_line("window show");
 	set_visible(true);
 }
 
@@ -797,6 +798,7 @@ void Window::set_visible(bool p_visible) {
 	notification(NOTIFICATION_VISIBILITY_CHANGED);
 	emit_signal(SceneStringNames::get_singleton()->visibility_changed);
 
+	print_line("Window set_visible setviewport_set_active");
 	RS::get_singleton()->viewport_set_active(get_viewport_rid(), visible);
 
 	//update transient exclusive
@@ -1207,6 +1209,7 @@ void Window::_notification(int p_what) {
 			if (visible) {
 				notification(NOTIFICATION_VISIBILITY_CHANGED);
 				emit_signal(SceneStringNames::get_singleton()->visibility_changed);
+				print_line("Window::_notification viewport_set_active");
 				RS::get_singleton()->viewport_set_active(get_viewport_rid(), true);
 			}
 
@@ -1515,6 +1518,7 @@ void Window::popup_on_parent(const Rect2i &p_parent_rect) {
 	ERR_FAIL_COND(!is_inside_tree());
 	ERR_FAIL_COND_MSG(window_id == DisplayServer::MAIN_WINDOW_ID, "Can't popup the main window.");
 
+	print_line("popup_on_parent");
 	if (!is_embedded()) {
 		Window *window = get_parent_visible_window();
 
@@ -1532,6 +1536,8 @@ void Window::popup_centered_clamped(const Size2i &p_size, float p_fallback_ratio
 	ERR_MAIN_THREAD_GUARD;
 	ERR_FAIL_COND(!is_inside_tree());
 	ERR_FAIL_COND_MSG(window_id == DisplayServer::MAIN_WINDOW_ID, "Can't popup the main window.");
+
+	print_line("popup_centered_clamped");
 
 	// Consider the current size when calling with the default value.
 	Size2i expected_size = p_size == Size2i() ? size : p_size;
@@ -1569,6 +1575,9 @@ void Window::popup_centered(const Size2i &p_minsize) {
 	Size2i expected_size = p_minsize == Size2i() ? size : p_minsize;
 
 	Rect2 parent_rect;
+
+	print_line("popup_centered");
+
 
 	if (is_embedded()) {
 		parent_rect = get_embedder()->get_visible_rect();
@@ -1652,6 +1661,7 @@ void Window::popup(const Rect2i &p_screen_rect) {
 	}
 
 	set_transient(true);
+	print_line("window popup show");
 	set_visible(true);
 
 	Rect2i parent_rect;

@@ -732,6 +732,10 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 	engine = memnew(Engine);
 
+#ifdef TOOLS_ENABLED
+	print_line("TOOLS_ENABLED = 1");
+#endif
+
 	MAIN_PRINT("Main: Initialize CORE");
 	OS::get_singleton()->benchmark_begin_measure("core");
 
@@ -1496,6 +1500,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 #ifdef TOOLS_ENABLED
 		found_project = true;
 #endif
+		print_line("load main_pack success");
 	} else {
 #ifdef TOOLS_ENABLED
 		editor = false;
@@ -3438,22 +3443,22 @@ bool Main::iteration() {
 	}
 	message_queue->flush();
 
-	print_line("rendering server sync");
+	//print_line("rendering server sync");
 	RenderingServer::get_singleton()->sync(); //sync if still drawing from previous frames.
 
 	if (DisplayServer::get_singleton()->can_any_window_draw() &&
 			RenderingServer::get_singleton()->is_render_loop_enabled()) {
 		if ((!force_redraw_requested) && OS::get_singleton()->is_in_low_processor_usage_mode()) {
-			print_line("rendering server has_changed?");
+			//print_line("rendering server has_changed?");
 			if (RenderingServer::get_singleton()->has_changed()) {
 
-				print_line("rendering server changed draw");
+				//print_line("rendering server changed draw");
 				RenderingServer::get_singleton()->draw(true, scaled_step); // flush visual commands
 				Engine::get_singleton()->frames_drawn++;
 			}
 		} else {
 
-			print_line("rendering server draw");
+			//print_line("rendering server draw");
 			RenderingServer::get_singleton()->draw(true, scaled_step); // flush visual commands
 			Engine::get_singleton()->frames_drawn++;
 			force_redraw_requested = false;

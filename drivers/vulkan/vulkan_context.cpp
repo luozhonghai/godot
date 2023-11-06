@@ -2341,6 +2341,80 @@ Error VulkanContext::swap_buffers() {
 		// simple that it doesn't do either of those.
 	}
 #endif
+
+
+#ifdef VISIONOS_ENABLED
+
+	const VkCommandBuffer *commands_ptr = nullptr;
+	uint32_t commands_to_submit = 0;
+
+	if (command_buffer_queue[0] == nullptr) {
+		print_line("command_buffer_queue[0] == null");
+		// No setup command, but commands to submit, submit from the first and skip command.
+		if (command_buffer_count > 1) {
+			commands_ptr = command_buffer_queue.ptr() + 1;
+			commands_to_submit = command_buffer_count - 1;
+		}
+	} else {
+		print_line("command_buffer_queue[0] != null");
+		commands_ptr = command_buffer_queue.ptr();
+		commands_to_submit = command_buffer_count;
+
+		print_line("commands_to_submit: " + itos(commands_to_submit));
+	}
+
+	VkSemaphore *semaphores_to_acquire = (VkSemaphore *)alloca(windows.size() * sizeof(VkSemaphore));
+	VkPipelineStageFlags *pipe_stage_flags = (VkPipelineStageFlags *)alloca(windows.size() * sizeof(VkPipelineStageFlags));
+	uint32_t semaphores_to_acquire_count = 0;
+
+	for (KeyValue<int, Window> &E : windows) {
+		Window *w = &E.value;
+
+		if (w->semaphore_acquired) {
+			semaphores_to_acquire[semaphores_to_acquire_count] = w->image_acquired_semaphores[frame_index];
+			pipe_stage_flags[semaphores_to_acquire_count] = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+			semaphores_to_acquire_count++;
+		}
+	}
+
+	VkPipelineStageFlags pipe_stage_flags_visionxr;
+	VkSubmitInfo submit_info;
+	submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+	submit_info.pNext = NULL;
+	pipe_stage_flags_visionxr = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+	submit_info.pWaitDstStageMask = &pipe_stage_flags_visionxr;
+	//submit_info.waitSemaphoreCount = 1;
+	//submit_info.pWaitSemaphores = &image_acquired_semaphores[frame_index];
+	//submit_info.waitSemaphoreCount = semaphores_to_acquire_count;
+	//submit_info.pWaitSemaphores = semaphores_to_acquire;
+
+	submit_info.waitSemaphoreCount = 0;
+	submit_info.pWaitSemaphores = NULL;
+	submit_info.commandBufferCount = commands_to_submit;
+	submit_info.pCommandBuffers = commands_ptr;
+	submit_info.signalSemaphoreCount = 0;
+	submit_info.pSignalSemaphores = NULL;
+	//submit_info.signalSemaphoreCount = 1;
+	//submit_info.pSignalSemaphores = &draw_complete_semaphores[frame_index];
+	//err = vkQueueSubmit(graphicsQueue, 1, &submit_info, fences[frame_index]);
+	
+	print_line("vkQueueSubmit");
+	err = vkQueueSubmit(graphics_queue, 1, &submit_info, nullptr);
+	ERR_FAIL_COND_V_MSG(err, ERR_CANT_CREATE, "Vulkan: Cannot submit graphics queue. Error code: " + String(string_VkResult(err)));
+
+	command_buffer_queue.write[0] = nullptr;
+	command_buffer_count = 1;
+
+	frame_index += 1;
+	frame_index %= FRAME_LAG;
+
+	buffers_prepared = false;
+
+	print_line("swap buffers");
+	return OK;
+
+#else
+
 	// Wait for the image acquired semaphore to be signaled to ensure
 	// that the image won't be rendered to until the presentation
 	// engine has fully released ownership to the application, and it is
@@ -2390,14 +2464,6 @@ Error VulkanContext::swap_buffers() {
 	command_buffer_queue.write[0] = nullptr;
 	command_buffer_count = 1;
 
-#ifdef VISIONOS_ENABLED
-	frame_index += 1;
-	frame_index %= FRAME_LAG;
-
-	buffers_prepared = false;
-	return OK;
-
-#endif
 
 	if (separate_present_queue) {
 		// If we are using separate queues, change image ownership to the
@@ -2457,6 +2523,7 @@ Error VulkanContext::swap_buffers() {
 		pImageIndices[present.swapchainCount] = w->current_buffer;
 		present.swapchainCount++;
 	}
+
 
 #if 0
 	if (is_device_extension_enabled(VK_KHR_incremental_present_enabled)) {
@@ -2546,6 +2613,8 @@ Error VulkanContext::swap_buffers() {
 
 	buffers_prepared = false;
 	return OK;
+
+#endif
 }
 
 void VulkanContext::resize_notify() {

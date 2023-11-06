@@ -340,6 +340,8 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 
 	// Glow, auto exposure and DoF (if enabled).
 
+	print_line("_render_buffers_post_process_and_tonemap");
+
 	Size2i internal_size = rb->get_internal_size();
 	Size2i target_size = rb->get_target_size();
 

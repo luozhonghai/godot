@@ -225,6 +225,8 @@ public:
 	RID get_depth_texture();
 	RID get_depth_texture(const uint32_t p_layer);
 
+	RID get_color_texture();
+
 	// back buffer (color)
 	RID get_back_buffer_texture() const { return has_texture(RB_SCOPE_BUFFERS, RB_TEX_BLUR_0) ? get_texture(RB_SCOPE_BUFFERS, RB_TEX_BLUR_0) : RID(); } // We (re)use our blur texture here.
 

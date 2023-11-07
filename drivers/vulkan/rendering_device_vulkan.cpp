@@ -6740,14 +6740,18 @@ Error RenderingDeviceVulkan::_draw_list_render_pass_begin(Framebuffer *framebuff
 		for (int i = 0; i < framebuffer->texture_ids.size(); i++) {
 			Texture *texture = texture_owner.get_or_null(framebuffer->texture_ids[i]);
 			if (texture) {
+				print_line("useRenderPassAttachment push texture: " + itos(i));
 				attachments.push_back(texture->view);
 			}
 		}
-        rp_attach.pAttachments = &attachments[0];
-        rp_attach.attachmentCount = framebuffer->texture_ids.size();
+        rp_attach.pAttachments = attachments.ptr();
+        rp_attach.attachmentCount = attachments.size();
+		rp_attach.pNext = nullptr;
         
         rp_attach.sType = VK_STRUCTURE_TYPE_RENDER_PASS_ATTACHMENT_BEGIN_INFO;
 		render_pass_begin.pNext = &rp_attach;
+
+		print_line("useRenderPassAttachment");
 	}
 
 	render_pass_begin.renderPass = render_pass;
@@ -6802,6 +6806,8 @@ Error RenderingDeviceVulkan::_draw_list_render_pass_begin(Framebuffer *framebuff
 
 	render_pass_begin.clearValueCount = clear_values_count;
 	render_pass_begin.pClearValues = clear_values.ptr();
+
+	print_line("clear_values_count :" + itos(clear_values_count));
 
 	for (int i = 0; i < p_storage_textures.size(); i++) {
 		Texture *texture = texture_owner.get_or_null(p_storage_textures[i]);
@@ -6908,6 +6914,8 @@ RenderingDevice::DrawListID RenderingDeviceVulkan::draw_list_begin(RID p_framebu
 	ERR_FAIL_COND_V_MSG(draw_list != nullptr, INVALID_ID, "Only one draw list can be active at the same time.");
 	ERR_FAIL_COND_V_MSG(compute_list != nullptr && !compute_list->state.allow_draw_overlap, INVALID_ID, "Only one draw/compute list can be active at the same time.");
 
+	print_line("draw_list_begin");
+
 	Framebuffer *framebuffer = framebuffer_owner.get_or_null(p_framebuffer);
 	ERR_FAIL_COND_V(!framebuffer, INVALID_ID);
 
@@ -7010,6 +7018,8 @@ RenderingDevice::DrawListID RenderingDeviceVulkan::draw_list_begin(RID p_framebu
 
 Error RenderingDeviceVulkan::draw_list_begin_split(RID p_framebuffer, uint32_t p_splits, DrawListID *r_split_ids, InitialAction p_initial_color_action, FinalAction p_final_color_action, InitialAction p_initial_depth_action, FinalAction p_final_depth_action, const Vector<Color> &p_clear_color_values, float p_clear_depth, uint32_t p_clear_stencil, const Rect2 &p_region, const Vector<RID> &p_storage_textures) {
 	_THREAD_SAFE_METHOD_
+
+	print_line("draw_list_begin_split");
 
 	ERR_FAIL_COND_V_MSG(draw_list != nullptr, ERR_BUSY, "Only one draw list can be active at the same time.");
 	ERR_FAIL_COND_V_MSG(compute_list != nullptr && !compute_list->state.allow_draw_overlap, ERR_BUSY, "Only one draw/compute list can be active at the same time.");
@@ -8550,6 +8560,8 @@ void RenderingDeviceVulkan::_finalize_command_bufers() {
 	if (compute_list) {
 		ERR_PRINT("Found open compute list at the end of the frame, this should never happen (further compute will likely not work).");
 	}
+
+	print_line("_finalize_command_bufers vkEndCommandBuffer begin");
 
 	{ // Complete the setup buffer (that needs to be processed before anything else).
 		vkEndCommandBuffer(frames[frame].setup_command_buffer);

@@ -79,6 +79,9 @@ private:
 	Vector<RID> color_texture_rids;
 	Vector<RID> depth_texture_rids;
 
+	RID color_texture_rid;
+	RID depth_texture_rid;
+
 	ar_session_t _arSession;
     ar_world_tracking_provider_t _worldTrackingProvider;
 

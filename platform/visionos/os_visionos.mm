@@ -124,6 +124,8 @@ bool OS_VISIONOS::iterate() {
         return true;
     }
 
+	std::cout << "cp_frame_predict_timing" << std::endl;
+
 	_timing = timing;
 
     cp_frame_start_update(frame);

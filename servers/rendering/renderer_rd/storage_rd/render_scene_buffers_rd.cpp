@@ -515,6 +515,21 @@ RID RenderSceneBuffersRD::get_depth_texture() {
 	}
 }
 
+RID RenderSceneBuffersRD::get_color_texture() {
+	if (render_target.is_null()) {
+		// not applicable when there is no render target (likely this is for a reflection probe)
+		return RID();
+	}
+
+	RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
+	RID color = texture_storage->render_target_get_override_color(render_target);
+	if (color.is_valid()) {
+		return color;
+	} else {
+		return get_internal_texture();
+	}
+}
+
 RID RenderSceneBuffersRD::get_depth_texture(const uint32_t p_layer) {
 	RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
 	RID depth_slice = texture_storage->render_target_get_override_depth_slice(render_target, p_layer);

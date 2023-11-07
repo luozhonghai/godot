@@ -19,15 +19,15 @@ uint32_t VisionXRInterface::get_capabilities() const {
 }
 
 RID VisionXRInterface::get_color_texture() {
-	return XRInterface::get_color_texture();
-	//std::cout << "visionxr get_color_texture" << std::endl;
-	//return color_texture_rids[0];
+	//return XRInterface::get_color_texture();
+	std::cout << "visionxr get_color_texture" << std::endl;
+	return color_texture_rid;
 }
 
 RID VisionXRInterface::get_depth_texture() {
-	return XRInterface::get_depth_texture();
-	//std::cout << "visionxr get_depth_texture" << std::endl;
-	//return depth_texture_rids[0];
+	//return XRInterface::get_depth_texture();
+	std::cout << "visionxr get_depth_texture" << std::endl;
+	return depth_texture_rid;
 }
 
 bool VisionXRInterface::initialize_on_startup() const {
@@ -89,11 +89,13 @@ void VisionXRInterface::pre_render() {
 	cp_frame_start_submission(_frame);
 
 	//std::cout << "cp_frame_start_submission " << std::endl;
-
+	std::cout << "cp_frame_query_drawable ... " << std::endl;
 	_drawable = cp_frame_query_drawable(_frame);
 	if (_drawable == nullptr) {
 		return;
 	}
+
+	std::cout << "cp_frame_query_drawable success " << std::endl;
 
 	cp_frame_timing_t actualTiming = cp_drawable_get_frame_timing(_drawable);
 	ar_device_anchor_t pose = createPoseForTiming(actualTiming);
@@ -148,7 +150,7 @@ void VisionXRInterface::prepareColor(cp_drawable_t drawable, size_t index)
         .arrayLayers = 1,
         .samples = VK_SAMPLE_COUNT_1_BIT,
         .tiling = VK_IMAGE_TILING_OPTIMAL,
-        .usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
+        .usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
         .flags = 0,
     };
     image.extent.width = color_texture.width;
@@ -187,7 +189,7 @@ void VisionXRInterface::prepareColor(cp_drawable_t drawable, size_t index)
 				1,
 				1);
 
-	color_texture_rids.push_back(image_rid);
+	color_texture_rid = image_rid;
 }
 
 void VisionXRInterface::prepareDepth(cp_drawable_t drawable, size_t index)
@@ -229,9 +231,10 @@ void VisionXRInterface::prepareDepth(cp_drawable_t drawable, size_t index)
 	RenderingDevice *rendering_device = rendering_server->get_rendering_device();
 	//ERR_FAIL_NULL_V(rendering_device, false);
 
-	RenderingDevice::DataFormat format = RenderingDevice::DATA_FORMAT_R16G16B16A16_SFLOAT;
+    //RenderingDevice::DataFormat format = RenderingDevice::DATA_FORMAT_D16_UNORM;
+	RenderingDevice::DataFormat format = RenderingDevice::DATA_FORMAT_D32_SFLOAT;
 	RenderingDevice::TextureSamples samples = RenderingDevice::TEXTURE_SAMPLES_1;
-	uint64_t usage_flags = RenderingDevice::TEXTURE_USAGE_SAMPLING_BIT | RenderingDevice::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT;
+	uint64_t usage_flags = RenderingDevice::TEXTURE_USAGE_SAMPLING_BIT | RenderingDevice::TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
 
 	uint32_t p_width = depth_texture.width;
 	uint32_t p_height = depth_texture.width;
@@ -251,7 +254,7 @@ void VisionXRInterface::prepareDepth(cp_drawable_t drawable, size_t index)
 				1,
 				1);
 
-	depth_texture_rids.push_back(image_rid);
+	depth_texture_rid  = image_rid;
 }
 
 bool VisionXRInterface::pre_draw_viewport(RID p_render_target) 

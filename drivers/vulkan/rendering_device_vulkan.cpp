@@ -45,6 +45,7 @@
 
 #include "servers/xr_server.h"
 #include "servers/xr/xr_interface.h"
+#include "thirdparty/MoltenVK/mvk_config.h"
 //#include "modules/visionxr/visionxr_interface.h"
 #import "modules/visionxr/vulkan_bridge.h"
 
@@ -6995,6 +6996,7 @@ RenderingDevice::DrawListID RenderingDeviceVulkan::draw_list_begin(RID p_framebu
 		_draw_list_insert_clear_region(draw_list, framebuffer, viewport_offset, viewport_size, needs_clear_color, p_clear_color_values, needs_clear_depth, p_clear_depth, p_clear_stencil);
 	}
 
+#ifdef VISIONOS_ENABLED
 	VkViewport viewport;
 	viewport.x = viewport_offset.x;
 	viewport.y = viewport_offset.y;
@@ -7012,7 +7014,7 @@ RenderingDevice::DrawListID RenderingDeviceVulkan::draw_list_begin(RID p_framebu
 	scissor.extent.height = viewport_size.height;
 
 	vkCmdSetScissor(command_buffer, 0, 1, &scissor);
-
+#endif
 	return int64_t(ID_TYPE_DRAW_LIST) << ID_BASE_SHIFT;
 }
 
@@ -7223,6 +7225,7 @@ void RenderingDeviceVulkan::draw_list_bind_render_pipeline(DrawListID p_list, RI
 		dl->state.pipeline_shader = pipeline->shader;
 	}
 
+	_shader_uniform_debug(dl->state.pipeline_shader);
 #ifdef DEBUG_ENABLED
 	// Update render pass pipeline info.
 	dl->validation.pipeline_active = true;
@@ -7407,6 +7410,7 @@ void RenderingDeviceVulkan::draw_list_draw(DrawListID p_list, bool p_use_indices
 			} else if (uniform_set_owner.owns(dl->state.sets[i].uniform_set)) {
 				UniformSet *us = uniform_set_owner.get_or_null(dl->state.sets[i].uniform_set);
 				ERR_FAIL_MSG("Uniforms supplied for set (" + itos(i) + "):\n" + _shader_uniform_debug(us->shader_id, us->shader_set) + "\nare not the same format as required by the pipeline shader. Pipeline shader requires the following bindings:\n" + _shader_uniform_debug(dl->state.pipeline_shader));
+				_shader_uniform_debug(dl->state.pipeline_shader);
 			} else {
 				ERR_FAIL_MSG("Uniforms supplied for set (" + itos(i) + ", which was was just freed) are not the same format as required by the pipeline shader. Pipeline shader requires the following bindings:\n" + _shader_uniform_debug(dl->state.pipeline_shader));
 			}
@@ -8912,6 +8916,17 @@ void RenderingDeviceVulkan::initialize(VulkanContext *p_context, bool p_local_de
 		device_capabilities.version_minor = p_context->get_vulkan_minor();
 	}
 
+	print_line("RenderingDeviceVulkan: initialize.");
+#ifdef VISIONOS_ENABLED
+	MVKConfiguration config;
+	size_t len = sizeof(MVKConfiguration);
+	vkGetMoltenVKConfigurationMVK(nullptr, &config, &len);
+	config.prefillMetalCommandBuffers = MVK_CONFIG_PREFILL_METAL_COMMAND_BUFFERS_STYLE_DEFERRED_ENCODING;
+	vkSetMoltenVKConfigurationMVK(nullptr, &config, &len);
+
+	print_line("mvkconfig set");
+#endif
+
 	context = p_context;
 	device = p_context->get_device();
 	if (p_local_device) {
@@ -8936,6 +8951,7 @@ void RenderingDeviceVulkan::initialize(VulkanContext *p_context, bool p_local_de
 
 	frames.resize(frame_count);
 	frame = 0;
+
 	// Create setup and frame buffers.
 	for (int i = 0; i < frame_count; i++) {
 		frames[i].index = 0;
@@ -8952,6 +8968,7 @@ void RenderingDeviceVulkan::initialize(VulkanContext *p_context, bool p_local_de
 		}
 
 		{ // Create command buffers.
+
 
 			VkCommandBufferAllocateInfo cmdbuf;
 			// No command buffer exists, create it.

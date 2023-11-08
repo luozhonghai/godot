@@ -48,11 +48,11 @@ bool VisionXRInterface::initialize() {
 	initialized = false;
 
 	if (!initialized) {
-		MVKConfiguration config;
-		size_t len = sizeof(MVKConfiguration);
-		vkGetMoltenVKConfigurationMVK(nullptr, &config, &len);
-		config.prefillMetalCommandBuffers = MVK_CONFIG_PREFILL_METAL_COMMAND_BUFFERS_STYLE_DEFERRED_ENCODING;
-		vkSetMoltenVKConfigurationMVK(nullptr, &config, &len);
+		// MVKConfiguration config;
+		// size_t len = sizeof(MVKConfiguration);
+		// vkGetMoltenVKConfigurationMVK(nullptr, &config, &len);
+		// config.prefillMetalCommandBuffers = MVK_CONFIG_PREFILL_METAL_COMMAND_BUFFERS_STYLE_DEFERRED_ENCODING;
+		// vkSetMoltenVKConfigurationMVK(nullptr, &config, &len);
 
 		// we must create a tracker for our head
 		// head.instantiate();
@@ -169,7 +169,7 @@ void VisionXRInterface::prepareColor(cp_drawable_t drawable, size_t index)
 
 	RenderingDevice::DataFormat format = RenderingDevice::DATA_FORMAT_R16G16B16A16_SFLOAT;
 	RenderingDevice::TextureSamples samples = RenderingDevice::TEXTURE_SAMPLES_1;
-	uint64_t usage_flags = RenderingDevice::TEXTURE_USAGE_SAMPLING_BIT | RenderingDevice::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT;
+	uint64_t usage_flags = RenderingDevice::TEXTURE_USAGE_SAMPLING_BIT | RenderingDevice::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_INPUT_ATTACHMENT_BIT;
 
 	uint32_t p_width = color_texture.width;
 	uint32_t p_height = color_texture.width;

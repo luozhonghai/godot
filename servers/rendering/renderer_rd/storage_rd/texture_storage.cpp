@@ -170,7 +170,8 @@ TextureStorage::TextureStorage() {
 
 		{
 			RD::TextureFormat tf;
-			tf.format = RD::DATA_FORMAT_D16_UNORM;
+			//tf.format = RD::DATA_FORMAT_D16_UNORM;
+			tf.format = RD::DATA_FORMAT_D32_SFLOAT;
 			tf.width = 4;
 			tf.height = 4;
 			tf.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT | RD::TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
@@ -443,7 +444,9 @@ TextureStorage::TextureStorage() {
 	{ //create default array depth
 
 		RD::TextureFormat tformat;
-		tformat.format = RD::DATA_FORMAT_D16_UNORM;
+		//tformat.format = RD::DATA_FORMAT_D16_UNORM;
+		tformat.format = RD::DATA_FORMAT_D32_SFLOAT;
+
 		tformat.width = 4;
 		tformat.height = 4;
 		tformat.array_layers = 1;

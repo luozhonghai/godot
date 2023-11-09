@@ -740,7 +740,7 @@ void Window::update_mouse_cursor_state() {
 
 void Window::show() {
 	ERR_MAIN_THREAD_GUARD;
-	print_line("window show");
+	//print_line("window show");
 	set_visible(true);
 }
 
@@ -798,7 +798,7 @@ void Window::set_visible(bool p_visible) {
 	notification(NOTIFICATION_VISIBILITY_CHANGED);
 	emit_signal(SceneStringNames::get_singleton()->visibility_changed);
 
-	print_line("Window set_visible setviewport_set_active");
+	//print_line("Window set_visible setviewport_set_active");
 	RS::get_singleton()->viewport_set_active(get_viewport_rid(), visible);
 
 	//update transient exclusive
@@ -1209,7 +1209,7 @@ void Window::_notification(int p_what) {
 			if (visible) {
 				notification(NOTIFICATION_VISIBILITY_CHANGED);
 				emit_signal(SceneStringNames::get_singleton()->visibility_changed);
-				print_line("Window::_notification viewport_set_active");
+				//print_line("Window::_notification viewport_set_active");
 				RS::get_singleton()->viewport_set_active(get_viewport_rid(), true);
 			}
 
@@ -1661,7 +1661,7 @@ void Window::popup(const Rect2i &p_screen_rect) {
 	}
 
 	set_transient(true);
-	print_line("window popup show");
+	//print_line("window popup show");
 	set_visible(true);
 
 	Rect2i parent_rect;

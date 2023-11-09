@@ -20,13 +20,13 @@ uint32_t VisionXRInterface::get_capabilities() const {
 
 RID VisionXRInterface::get_color_texture() {
 	//return XRInterface::get_color_texture();
-	std::cout << "visionxr get_color_texture" << std::endl;
+	//std::cout << "visionxr get_color_texture" << std::endl;
 	return color_texture_rid;
 }
 
 RID VisionXRInterface::get_depth_texture() {
 	//return XRInterface::get_depth_texture();
-	std::cout << "visionxr get_depth_texture" << std::endl;
+	//std::cout << "visionxr get_depth_texture" << std::endl;
 	return depth_texture_rid;
 }
 
@@ -271,12 +271,12 @@ Vector<BlitToScreen> VisionXRInterface::post_draw_viewport(RID p_render_target, 
 
 void VisionXRInterface::post_encode_present(id<MTLCommandBuffer> mtlCommandBuffer)
 {
-	std::cout << "cp_drawable_encode_present " << std::endl;
+	//std::cout << "cp_drawable_encode_present " << std::endl;
 	cp_drawable_encode_present(_drawable, mtlCommandBuffer);
 }
 void VisionXRInterface::end_frame() {
 
-	std::cout << "cp_frame_end_submission " << std::endl;
+	//std::cout << "cp_frame_end_submission " << std::endl;
 	cp_frame_end_submission(_frame);
 }
 

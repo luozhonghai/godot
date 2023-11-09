@@ -6915,7 +6915,7 @@ RenderingDevice::DrawListID RenderingDeviceVulkan::draw_list_begin(RID p_framebu
 	ERR_FAIL_COND_V_MSG(draw_list != nullptr, INVALID_ID, "Only one draw list can be active at the same time.");
 	ERR_FAIL_COND_V_MSG(compute_list != nullptr && !compute_list->state.allow_draw_overlap, INVALID_ID, "Only one draw/compute list can be active at the same time.");
 
-	print_line("draw_list_begin");
+	//print_line("draw_list_begin");
 
 	Framebuffer *framebuffer = framebuffer_owner.get_or_null(p_framebuffer);
 	ERR_FAIL_COND_V(!framebuffer, INVALID_ID);
@@ -6996,7 +6996,7 @@ RenderingDevice::DrawListID RenderingDeviceVulkan::draw_list_begin(RID p_framebu
 		_draw_list_insert_clear_region(draw_list, framebuffer, viewport_offset, viewport_size, needs_clear_color, p_clear_color_values, needs_clear_depth, p_clear_depth, p_clear_stencil);
 	}
 
-#ifdef VISIONOS_ENABLED
+#ifndef VISIONOS_ENABLED
 	VkViewport viewport;
 	viewport.x = viewport_offset.x;
 	viewport.y = viewport_offset.y;
@@ -8565,7 +8565,7 @@ void RenderingDeviceVulkan::_finalize_command_bufers() {
 		ERR_PRINT("Found open compute list at the end of the frame, this should never happen (further compute will likely not work).");
 	}
 
-	print_line("_finalize_command_bufers vkEndCommandBuffer begin");
+	//print_line("_finalize_command_bufers vkEndCommandBuffer begin");
 
 	{ // Complete the setup buffer (that needs to be processed before anything else).
 		vkEndCommandBuffer(frames[frame].setup_command_buffer);

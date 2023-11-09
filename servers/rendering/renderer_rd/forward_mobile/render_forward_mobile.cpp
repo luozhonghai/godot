@@ -186,11 +186,12 @@ RID RenderForwardMobile::RenderBufferDataForwardMobile::get_color_fbs(Framebuffe
 	Vector<RID> textures;
 	int color_buffer_id = 0;
 
-	//origin
-	//textures.push_back(use_msaa ? get_color_msaa() : render_buffers->get_internal_texture()); // 0 - color buffer
-
+#ifndef VISIONOS_ENABLED
+	textures.push_back(use_msaa ? get_color_msaa() : render_buffers->get_internal_texture()); // 0 - color buffer
+#else
 	//visionos test
 	textures.push_back(use_msaa ? get_color_msaa() : render_buffers->get_color_texture()); // 0 - color buffer
+#endif
 	textures.push_back(use_msaa ? get_depth_msaa() : render_buffers->get_depth_texture()); // 1 - depth buffer
 	if (vrs_texture.is_valid()) {
 		textures.push_back(vrs_texture); // 2 - vrs texture
@@ -540,9 +541,9 @@ RID RenderForwardMobile::_setup_render_pass_uniform_set(RenderListType p_render_
 		RD::get_singleton()->free(render_pass_uniform_sets[p_index]);
 	}
 
-	print_line("mobile setup render pass uniform set start");
+	//print_line("mobile setup render pass uniform set start");
 	render_pass_uniform_sets[p_index] = RD::get_singleton()->uniform_set_create(uniforms, scene_shader.default_shader_rd, RENDER_PASS_UNIFORM_SET);
-	print_line("mobile setup render pass uniform set end");
+	//print_line("mobile setup render pass uniform set end");
 
 	return render_pass_uniform_sets[p_index];
 }
@@ -620,7 +621,7 @@ void RenderForwardMobile::_pre_opaque_render(RenderDataRD *p_render_data) {
 
 	//prepare shadow rendering
 	if (render_shadows) {
-		print_line("render shadows");
+		//print_line("render shadows");
 		RENDER_TIMESTAMP("Render Shadows");
 
 		_render_shadow_begin();
@@ -709,7 +710,12 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 	RID framebuffer;
 	bool reverse_cull = p_render_data->scene_data->cam_transform.basis.determinant() < 0;
 	bool using_subpass_transparent = true;
+#ifndef VISIONOS_ENABLED
+	bool using_subpass_post_process = true;
+#else
 	bool using_subpass_post_process = false;
+#endif
+
 
 	// fill our render lists early so we can find out if we use various features
 	_fill_render_list(RENDER_LIST_OPAQUE, p_render_data, PASS_MODE_COLOR);
@@ -783,7 +789,7 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 	_setup_lightmaps(p_render_data, *p_render_data->lightmaps, p_render_data->scene_data->cam_transform);
 	_setup_environment(p_render_data, is_reflection_probe, screen_size, !is_reflection_probe, p_default_bg_color, false);
 
-	print_line("after _setup_environment");
+	//print_line("after _setup_environment");
 	_update_render_base_uniform_set(); //may have changed due to the above (light buffer enlarged, as an example)
 
 	RD::get_singleton()->draw_command_end_label(); // Render Setup
@@ -935,6 +941,7 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 			RENDER_TIMESTAMP("Render Opaque");
 		}
 
+		//RID rp_uniform_set = RID();
 		RID rp_uniform_set = _setup_render_pass_uniform_set(RENDER_LIST_OPAQUE, p_render_data, radiance_texture, true);
 
 		bool can_continue_color = !using_subpass_transparent && !scene_state.used_screen_texture;
@@ -967,7 +974,7 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 
 			} else {
 
-				print_line("Render Opaque Subpass single threaded");
+				//print_line("Render Opaque Subpass single threaded");
 #ifdef VISIONOS_ENABLED
 				bool bUseRenderPassAttachment = true;
 #else
@@ -977,15 +984,20 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 				RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(framebuffer, keep_color ? RD::INITIAL_ACTION_KEEP : RD::INITIAL_ACTION_CLEAR, can_continue_color ? RD::FINAL_ACTION_CONTINUE : RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_CLEAR, can_continue_depth ? RD::FINAL_ACTION_CONTINUE : RD::FINAL_ACTION_READ, c, 1.0, 0, Rect2(), Vector<RID>(), bUseRenderPassAttachment);
 				_render_list(draw_list, fb_format, &render_list_params, 0, render_list_params.element_count);
 			}
-
+#ifdef VISIONOS_ENABLED
 			if (rb_data.is_valid()) {
 				_disable_clear_request(p_render_data);
 			}
+#endif
 	}
+
+#ifdef VISIONOS_ENABLED
 		RD::get_singleton()->draw_list_end(RD::BARRIER_MASK_ALL_BARRIERS);
 		RD::get_singleton()->draw_command_end_label(); //Render Opaque Subpass
-
 		return;
+#else
+		RD::get_singleton()->draw_command_end_label(); //Render Opaque Subpass
+#endif
 
 		if (draw_sky || draw_sky_fog_only) {
 			RD::get_singleton()->draw_command_begin_label("Draw Sky Subpass");
@@ -1012,13 +1024,13 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 		}
 
 		if (scene_state.used_screen_texture) {
-			print_line("used_screen_texture");
+			//print_line("used_screen_texture");
 			// Copy screen texture to backbuffer so we can read from it
 			_render_buffers_copy_screen_texture(p_render_data);
 		}
 
 		if (scene_state.used_depth_texture) {
-			print_line("used_depth_texture");
+			//print_line("used_depth_texture");
 			// Copy depth texture to backbuffer so we can read from it
 			_render_buffers_copy_depth_texture(p_render_data);
 		}
@@ -1055,7 +1067,7 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 
 			// blit to tonemap
 			if (rb_data.is_valid() && using_subpass_post_process) {
-				print_line("_post_process_subpass");
+				//print_line("_post_process_subpass");
 				_post_process_subpass(p_render_data->render_buffers->get_internal_texture(), framebuffer, p_render_data);
 			}
 
@@ -1988,23 +2000,23 @@ void RenderForwardMobile::_render_list(RenderingDevice::DrawListID p_draw_list, 
 
 	switch (p_params->pass_mode) {
 		case PASS_MODE_COLOR: {
-			print_line("_render_list PASS_MODE_COLOR");
+			//print_line("_render_list PASS_MODE_COLOR");
 			_render_list_template<PASS_MODE_COLOR>(p_draw_list, p_framebuffer_Format, p_params, p_from_element, p_to_element);
 		} break;
 		case PASS_MODE_COLOR_TRANSPARENT: {
-			print_line("_render_list PASS_MODE_COLOR_TRANSPARENT");
+			//print_line("_render_list PASS_MODE_COLOR_TRANSPARENT");
 			_render_list_template<PASS_MODE_COLOR_TRANSPARENT>(p_draw_list, p_framebuffer_Format, p_params, p_from_element, p_to_element);
 		} break;
 		case PASS_MODE_SHADOW: {
-			print_line("_render_list PASS_MODE_SHADOW");
+			//print_line("_render_list PASS_MODE_SHADOW");
 			_render_list_template<PASS_MODE_SHADOW>(p_draw_list, p_framebuffer_Format, p_params, p_from_element, p_to_element);
 		} break;
 		case PASS_MODE_SHADOW_DP: {
-			print_line("_render_list PASS_MODE_SHADOW_DP");
+			//print_line("_render_list PASS_MODE_SHADOW_DP");
 			_render_list_template<PASS_MODE_SHADOW_DP>(p_draw_list, p_framebuffer_Format, p_params, p_from_element, p_to_element);
 		} break;
 		case PASS_MODE_DEPTH_MATERIAL: {
-			print_line("_render_list PASS_MODE_DEPTH_MATERIAL");
+			//print_line("_render_list PASS_MODE_DEPTH_MATERIAL");
 			_render_list_template<PASS_MODE_DEPTH_MATERIAL>(p_draw_list, p_framebuffer_Format, p_params, p_from_element, p_to_element);
 		} break;
 	}

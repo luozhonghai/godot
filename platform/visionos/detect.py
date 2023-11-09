@@ -129,6 +129,7 @@ def configure(env: "Environment"):
                 " -isysroot $VISIONOS_SDK_PATH".split()
             )
         )
+        # -fvisibility=hidden deleted
         env.Append(ASFLAGS=["-arch", "arm64"])
         env.Append(CPPDEFINES=["NEED_LONG_INT"])
 

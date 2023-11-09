@@ -34,7 +34,7 @@
 #include "core/io/dir_access.h"
 
 void RendererCompositorRD::prepare_for_blitting_render_targets() {
-	print_line("prepare_for_blitting_render_targets");
+	//print_line("prepare_for_blitting_render_targets");
 	RD::get_singleton()->prepare_screen_for_drawing();
 }
 

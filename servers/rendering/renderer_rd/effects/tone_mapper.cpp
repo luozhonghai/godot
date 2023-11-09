@@ -170,7 +170,7 @@ void ToneMapper::tonemapper(RID p_source_color, RID p_dst_framebuffer, const Ton
 	bool bUseRenderPassAttachment = false;
 #endif
 
-	print_line("visionos tonemapper");
+	//print_line("visionos tonemapper");
 
 	RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(p_dst_framebuffer, RD::INITIAL_ACTION_DROP, RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_DROP, RD::FINAL_ACTION_DISCARD, Vector<Color>(), 1.0,  0, Rect2(), Vector<RID>(),bUseRenderPassAttachment);
 	RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, tonemap.pipelines[mode].get_render_pipeline(RD::INVALID_ID, RD::get_singleton()->framebuffer_get_format(p_dst_framebuffer), false, RD::get_singleton()->draw_list_get_current_pass()));
@@ -262,8 +262,8 @@ void ToneMapper::tonemapper(RD::DrawListID p_subpass_draw_list, RID p_source_col
 
 	RD::get_singleton()->draw_list_set_push_constant(p_subpass_draw_list, &tonemap.push_constant, sizeof(TonemapPushConstant));
 
-	print_line("tone mapper subpass draw_list_draw begin");
+	//print_line("tone mapper subpass draw_list_draw begin");
 	RD::get_singleton()->draw_list_draw(p_subpass_draw_list, true);
-	print_line("tone mapper subpass draw_list_draw end");
+	//print_line("tone mapper subpass draw_list_draw end");
 
 }

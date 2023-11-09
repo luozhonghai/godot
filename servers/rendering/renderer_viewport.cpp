@@ -891,7 +891,7 @@ void RendererViewport::viewport_set_active(RID p_viewport, bool p_active) {
 	Viewport *viewport = viewport_owner.get_or_null(p_viewport);
 	ERR_FAIL_COND(!viewport);
 
-	print_line("RendererViewport viewport_set_active");
+	//print_line("RendererViewport viewport_set_active");
 	if (p_active) {
 		ERR_FAIL_COND_MSG(active_viewports.has(viewport), "Can't make active a Viewport that is already active.");
 		viewport->occlusion_buffer_dirty = true;

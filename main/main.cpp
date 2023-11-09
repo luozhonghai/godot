@@ -3443,7 +3443,7 @@ bool Main::iteration() {
 	}
 	message_queue->flush();
 
-	print_line("rendering server sync");
+	//print_line("rendering server sync");
 	RenderingServer::get_singleton()->sync(); //sync if still drawing from previous frames.
 
 	if (DisplayServer::get_singleton()->can_any_window_draw() &&
@@ -3458,7 +3458,7 @@ bool Main::iteration() {
 			}
 		} else {
 
-			print_line("rendering server draw");
+			//print_line("rendering server draw");
 			RenderingServer::get_singleton()->draw(true, scaled_step); // flush visual commands
 			Engine::get_singleton()->frames_drawn++;
 			force_redraw_requested = false;

@@ -180,6 +180,7 @@ TextureStorage::TextureStorage() {
 			tf.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT | RD::TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
 			tf.texture_type = RD::TEXTURE_TYPE_2D;
 
+#ifndef VISIONOS_ENABLED
 			Vector<uint8_t> sv;
 			sv.resize(16 * 2);
 			uint16_t *ptr = (uint16_t *)sv.ptrw();
@@ -190,6 +191,21 @@ TextureStorage::TextureStorage() {
 			Vector<Vector<uint8_t>> vpv;
 			vpv.push_back(sv);
 			default_rd_textures[DEFAULT_RD_TEXTURE_DEPTH] = RD::get_singleton()->texture_create(tf, RD::TextureView(), vpv);
+#else
+			Vector<uint8_t> sv;
+			sv.resize(16 * 4);
+
+			for (int i = 0; i < 16; i++) {
+				pv.set(i * 4 + 0, 255);
+				pv.set(i * 4 + 1, 255);
+				pv.set(i * 4 + 2, 255);
+				pv.set(i * 4 + 3, 255);
+			}
+
+			Vector<Vector<uint8_t>> vpv;
+			vpv.push_back(sv);
+			default_rd_textures[DEFAULT_RD_TEXTURE_DEPTH] = RD::get_singleton()->texture_create(tf, RD::TextureView(), vpv);
+#endif
 		}
 
 		for (int i = 0; i < 16; i++) {
@@ -459,12 +475,23 @@ TextureStorage::TextureStorage() {
 		tformat.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT | RD::TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
 		tformat.texture_type = RD::TEXTURE_TYPE_2D_ARRAY;
 
+#ifndef VISIONOS_ENABLED
 		Vector<uint8_t> sv;
 		sv.resize(16 * 2);
 		uint16_t *ptr = (uint16_t *)sv.ptrw();
 		for (int i = 0; i < 16; i++) {
 			ptr[i] = Math::make_half_float(1.0f);
 		}
+#else
+		Vector<uint8_t> sv;
+		sv.resize(16 * 4);
+		for (int i = 0; i < 16; i++) {
+			sv.set(i * 4 + 0, 128);
+			sv.set(i * 4 + 1, 128);
+			sv.set(i * 4 + 2, 255);
+			sv.set(i * 4 + 3, 255);
+		}
+#endif
 
 		{
 			Vector<Vector<uint8_t>> vsv;

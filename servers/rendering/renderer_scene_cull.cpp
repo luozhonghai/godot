@@ -2570,14 +2570,14 @@ void RendererSceneCull::render_camera(const Ref<RenderSceneBuffers> &p_render_bu
 		for (uint32_t v = 0; v < view_count; v++) {
 			//transforms[v] = p_xr_interface->get_transform_for_view(v, world_origin);
 			transforms[v] = camera->transform;
-			//projections[v] = p_xr_interface->get_projection_for_view(v, aspect, camera->znear, camera->zfar);
-			projections[0].set_frustum(
-						camera->size,
-						p_viewport_size.width / (float)p_viewport_size.height,
-						camera->offset,
-						camera->znear,
-						camera->zfar,
-						camera->vaspect);
+			projections[v] = p_xr_interface->get_projection_for_view(v, aspect, camera->znear, camera->zfar);
+			// projections[0].set_frustum(
+			// 			camera->size,
+			// 			p_viewport_size.width / (float)p_viewport_size.height,
+			// 			camera->offset,
+			// 			camera->znear,
+			// 			camera->zfar,
+			// 			camera->vaspect);
 		}
 
 		if (view_count == 1) {

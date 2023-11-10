@@ -1231,9 +1231,9 @@ void BaseMaterial3D::_update_shader() {
 		code += "	albedo_tex.rgb = mix(pow((albedo_tex.rgb + vec3(0.055)) * (1.0 / (1.0 + 0.055)),vec3(2.4)),albedo_tex.rgb.rgb * (1.0 / 12.92),lessThan(albedo_tex.rgb,vec3(0.04045)));\n";
 	}
 
-	if (flags[FLAG_ALBEDO_FROM_VERTEX_COLOR]) {
-		code += "	albedo_tex *= COLOR;\n";
-	}
+	// if (flags[FLAG_ALBEDO_FROM_VERTEX_COLOR]) {
+	// 	code += "	albedo_tex *= COLOR;\n";
+	// }
 	code += "	ALBEDO = albedo.rgb * albedo_tex.rgb;\n";
 
 	if (!orm) {

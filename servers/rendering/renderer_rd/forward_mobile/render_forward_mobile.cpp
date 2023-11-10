@@ -976,7 +976,7 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 
 				//print_line("Render Opaque Subpass single threaded");
 #ifdef VISIONOS_ENABLED
-				bool bUseRenderPassAttachment = true;
+				bool bUseRenderPassAttachment = false;
 #else
 				bool bUseRenderPassAttachment = false;
 #endif
@@ -985,16 +985,16 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 				_render_list(draw_list, fb_format, &render_list_params, 0, render_list_params.element_count);
 			}
 #ifdef VISIONOS_ENABLED
-			if (rb_data.is_valid()) {
-				_disable_clear_request(p_render_data);
-			}
+			// if (rb_data.is_valid()) {
+			// 	_disable_clear_request(p_render_data);
+			// }
 #endif
 	}
 
 #ifdef VISIONOS_ENABLED
-		RD::get_singleton()->draw_list_end(RD::BARRIER_MASK_ALL_BARRIERS);
+		//RD::get_singleton()->draw_list_end(RD::BARRIER_MASK_ALL_BARRIERS);
 		RD::get_singleton()->draw_command_end_label(); //Render Opaque Subpass
-		return;
+		//return;
 #else
 		RD::get_singleton()->draw_command_end_label(); //Render Opaque Subpass
 #endif

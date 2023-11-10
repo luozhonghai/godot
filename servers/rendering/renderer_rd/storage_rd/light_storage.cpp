@@ -2351,7 +2351,12 @@ void LightStorage::shadow_atlas_update(RID p_atlas) {
 void LightStorage::update_directional_shadow_atlas() {
 	if (directional_shadow.depth.is_null() && directional_shadow.size > 0) {
 		RD::TextureFormat tf;
+#ifndef VISIONOS_ENABLED
 		tf.format = directional_shadow.use_16_bits ? RD::DATA_FORMAT_D16_UNORM : RD::DATA_FORMAT_D32_SFLOAT;
+#else
+        //visionos force 32bit depth 
+        tf.format = RD::DATA_FORMAT_D32_SFLOAT;
+#endif
 		tf.width = directional_shadow.size;
 		tf.height = directional_shadow.size;
 		tf.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;

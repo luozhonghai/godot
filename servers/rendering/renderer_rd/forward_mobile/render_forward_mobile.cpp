@@ -190,7 +190,8 @@ RID RenderForwardMobile::RenderBufferDataForwardMobile::get_color_fbs(Framebuffe
 	textures.push_back(use_msaa ? get_color_msaa() : render_buffers->get_internal_texture()); // 0 - color buffer
 #else
 	//visionos test
-	textures.push_back(use_msaa ? get_color_msaa() : render_buffers->get_color_texture()); // 0 - color buffer
+	//textures.push_back(use_msaa ? get_color_msaa() : render_buffers->get_color_texture()); // 0 - color buffer
+	textures.push_back(use_msaa ? get_color_msaa() : render_buffers->get_internal_texture()); // 0 - color buffer
 #endif
 	textures.push_back(use_msaa ? get_depth_msaa() : render_buffers->get_depth_texture()); // 1 - depth buffer
 	if (vrs_texture.is_valid()) {
@@ -352,8 +353,14 @@ float RenderForwardMobile::_render_buffers_get_luminance_multiplier() {
 }
 
 RD::DataFormat RenderForwardMobile::_render_buffers_get_color_format() {
+
+#ifndef VISIONOS_ENABLED
 	// Using 32bit buffers enables AFBC on mobile devices which should have a definite performance improvement (MALI G710 and newer support this on 64bit RTs)
 	return RD::DATA_FORMAT_A2B10G10R10_UNORM_PACK32;
+#else
+    // Visionos pixel
+	return RD::DATA_FORMAT_R16G16B16A16_SFLOAT;
+#endif
 }
 
 bool RenderForwardMobile::_render_buffers_can_be_storage() {
@@ -789,7 +796,7 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 	_setup_lightmaps(p_render_data, *p_render_data->lightmaps, p_render_data->scene_data->cam_transform);
 	_setup_environment(p_render_data, is_reflection_probe, screen_size, !is_reflection_probe, p_default_bg_color, false);
 
-	//print_line("after _setup_environment");
+	print_line("after _setup_environment");
 	_update_render_base_uniform_set(); //may have changed due to the above (light buffer enlarged, as an example)
 
 	RD::get_singleton()->draw_command_end_label(); // Render Setup
@@ -985,9 +992,9 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 				_render_list(draw_list, fb_format, &render_list_params, 0, render_list_params.element_count);
 			}
 #ifdef VISIONOS_ENABLED
-			// if (rb_data.is_valid()) {
-			// 	_disable_clear_request(p_render_data);
-			// }
+//			 if (rb_data.is_valid()) {
+//			 	_disable_clear_request(p_render_data);
+//			 }
 #endif
 	}
 

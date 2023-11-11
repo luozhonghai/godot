@@ -172,7 +172,7 @@ void VisionXRInterface::prepareColor(cp_drawable_t drawable, size_t index)
 	uint64_t usage_flags = RenderingDevice::TEXTURE_USAGE_SAMPLING_BIT | RenderingDevice::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_INPUT_ATTACHMENT_BIT;
 
 	uint32_t p_width = color_texture.width;
-	uint32_t p_height = color_texture.width;
+	uint32_t p_height = color_texture.height;
 
 	target_size.width = p_width;
 	target_size.height = p_height;
@@ -237,7 +237,7 @@ void VisionXRInterface::prepareDepth(cp_drawable_t drawable, size_t index)
 	uint64_t usage_flags = RenderingDevice::TEXTURE_USAGE_SAMPLING_BIT | RenderingDevice::TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
 
 	uint32_t p_width = depth_texture.width;
-	uint32_t p_height = depth_texture.width;
+	uint32_t p_height = depth_texture.height;
 
 	target_size.width = p_width;
 	target_size.height = p_height;

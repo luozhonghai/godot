@@ -15,6 +15,14 @@
 #import <MetalKit/MetalKit.h>
 #import <ARKit/ARKit.h>
 #import <Spatial/Spatial.h>
+#include <simd/simd.h>
+
+
+
+struct PoseConstants {
+    simd_float4x4 projectionMatrix;
+    simd_float4x4 viewMatrix;
+};
 
 class VisionXRInterface : public XRInterface{
 	GDCLASS(VisionXRInterface, XRInterface);
@@ -51,6 +59,8 @@ public:
 
 protected:
 	static void _bind_methods();
+
+	PoseConstants device_pose;
 
 	Size2 target_size;
 
@@ -111,6 +121,8 @@ private:
         ar_session_run(_arSession, dataProviders);
     }
 
+	PoseConstants poseConstantsForViewIndex(cp_drawable_t drawable, size_t index);
+	
 
 };
 

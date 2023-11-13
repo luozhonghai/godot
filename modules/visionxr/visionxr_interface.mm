@@ -10,6 +10,14 @@
 #include "platform/visionos/os_visionos.h"
 #include "thirdparty/MoltenVK/mvk_config.h"
 
+
+static simd_float4x4 matrix_float4x4_from_double4x4(simd_double4x4 m) {
+    return simd_matrix(simd_make_float4(m.columns[0][0], m.columns[0][1], m.columns[0][2], m.columns[0][3]),
+                       simd_make_float4(m.columns[1][0], m.columns[1][1], m.columns[1][2], m.columns[1][3]),
+                       simd_make_float4(m.columns[2][0], m.columns[2][1], m.columns[2][2], m.columns[2][3]),
+                       simd_make_float4(m.columns[3][0], m.columns[3][1], m.columns[3][2], m.columns[3][3]));
+}
+
 StringName VisionXRInterface::get_name() const {
 	return StringName("VisionXR");
 };
@@ -112,6 +120,11 @@ void VisionXRInterface::pre_render() {
 
 		prepareColor(_drawable, 0);
 		prepareDepth(_drawable, 0);
+
+		device_pose = poseConstantsForViewIndex(_drawable, 0);
+
+
+
 
 
 	//}
@@ -327,15 +340,52 @@ Transform3D VisionXRInterface::get_camera_transform() {
 Transform3D VisionXRInterface::get_transform_for_view(uint32_t p_view, const Transform3D &p_cam_transform) {
 	_THREAD_SAFE_METHOD_
 
-	Transform3D transform_for_eye;
+	Transform3D transform;
 
 	XRServer *xr_server = XRServer::get_singleton();
-	ERR_FAIL_NULL_V(xr_server, transform_for_eye);
+	ERR_FAIL_NULL_V(xr_server, transform);
+	
+	matrix_float4x4 m44 = device_pose.viewMatrix;
+	transform.basis.rows[0].x = m44.columns[0][0];
+	transform.basis.rows[1].x = m44.columns[0][1];
+	transform.basis.rows[2].x = m44.columns[0][2];
+	transform.basis.rows[0].y = m44.columns[1][0];
+	transform.basis.rows[1].y = m44.columns[1][1];
+	transform.basis.rows[2].y = m44.columns[1][2];
+	transform.basis.rows[0].z = m44.columns[2][0];
+	transform.basis.rows[1].z = m44.columns[2][1];
+	transform.basis.rows[2].z = m44.columns[2][2];
+	transform.origin.x = m44.columns[3][0];
+	transform.origin.y = m44.columns[3][1];
+	transform.origin.z = m44.columns[3][2];
 
 	std::cout<< "visionxr get_transform_for_view " << std::endl;
 
-	return transform_for_eye;
+	return transform;
 
+}
+
+PoseConstants VisionXRInterface::poseConstantsForViewIndex(cp_drawable_t drawable, size_t index) {
+    PoseConstants outPose;
+
+    //ar_pose_t arPose = cp_drawable_get_ar_pose(drawable);
+    ar_device_anchor_t arDeviceAnchor = cp_drawable_get_device_anchor(drawable);
+    //simd_float4x4 poseTransform = ar_pose_get_origin_from_device_transform(arPose);
+    simd_float4x4 anchorTransform = ar_anchor_get_origin_from_anchor_transform(arDeviceAnchor);
+
+    cp_view_t view = cp_drawable_get_view(drawable, index);
+    simd_float4 tangents = cp_view_get_tangents(view);
+    simd_float2 depth_range = cp_drawable_get_depth_range(drawable);
+    SPProjectiveTransform3D projectiveTransform = SPProjectiveTransform3DMakeFromTangents(tangents[0], tangents[1],
+                                                                                          tangents[2], tangents[3],
+                                                                                          depth_range[1], depth_range[0],
+                                                                                          true);
+    outPose.projectionMatrix = matrix_float4x4_from_double4x4(projectiveTransform.matrix);
+
+    simd_float4x4 cameraMatrix = simd_mul(anchorTransform, cp_view_get_transform(view));
+    //outPose.viewMatrix = simd_inverse(cameraMatrix);
+	outPose.viewMatrix = cameraMatrix;
+    return outPose;
 }
 
 Projection VisionXRInterface::get_projection_for_view(uint32_t p_view, double p_aspect, double p_z_near, double p_z_far) {
